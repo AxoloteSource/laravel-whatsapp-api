@@ -7,7 +7,7 @@
         "whatsapp"
     ],
     "type": "library",
-    "license": "MTI",
+    "license": "MIT",
     "autoload": {
         "psr-4": {
             "Axolotesource\\LaravelWhatsappApi\\": "src/"
