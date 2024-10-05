@@ -13,8 +13,6 @@ use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Raw;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Templates\Template;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Templates\Test;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Text\Text;
-use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Media\Image;
-use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Media\ImageMessage;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Text\TextMessage;
 
 /**
@@ -34,6 +32,9 @@ class WhatsAppMessages
         return new InteractiveList($to);
     }
 
+    /**
+     * @deprecated use textMessage
+     */
     public static function text(string $to, $previewUrl = true): Text
     {
         return new Text($to, $previewUrl);

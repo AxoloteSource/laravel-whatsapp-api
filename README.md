@@ -51,5 +51,14 @@ WhatsAppMessages::interactiveButtons($phoneNumber)
     ->send();
 ```
 
+##### textMessage(string $to, $previewUrl = true): TextMessage
 
-## Coming song more documentation....
+This method allows you to send a text message from whatsapp
+
+```
+WhatsAppMessages::textMessage('51999999999')
+    ->body('Hello world')
+    ->send();
+```
+
+##### interactiveButtons(string $to): InteractiveButtons
