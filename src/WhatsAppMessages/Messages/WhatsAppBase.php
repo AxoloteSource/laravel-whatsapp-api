@@ -2,8 +2,10 @@
 
 namespace Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages;
 
+use Illuminate\Support\Str;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Config;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Constants\MessageType;
+use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\WhatsAppMessages;
 use Http;
 
 abstract class WhatsAppBase
@@ -23,6 +25,10 @@ abstract class WhatsAppBase
 
     public function send($to = null)
     {
+        if (WhatsAppMessages::isFake()) {
+            $this->initializeFakeResponse();
+        }
+
         if ($to !== null) {
             $this->to = config('laravel-whatsapp-api.test_mode') ? config('laravel-whatsapp-api.test_number') : $to;
         }
@@ -53,5 +59,31 @@ abstract class WhatsAppBase
             'Authorization' => "Bearer $this->bearer",
             'Content-Type' => "application/json"
         ];
+    }
+
+    private function initializeFakeResponse()
+    {
+        $prefix = 'wamid';
+        $randomId = Str::random(16);
+        $timestamp = now()->timestamp;
+
+        Http::fake([
+            '*' => Http::response([
+                'test' => true,
+                'messaging_product' => 'whatsapp',
+                'contacts' => [
+                    [
+                        'input' => $this->data()['to'],
+                        'wa_id' => $this->data()['to'],
+                    ],
+                    'messages' => [
+                        [
+                            'id' => "$prefix.".base64_encode("HBgN{$timestamp}NBUCABEYEjQx{$randomId}MzdBRQA="),
+                            'message_status' => 'accepted',
+                        ],
+                    ],
+                ],
+            ], 200, $this->headers()),
+        ]);
     }
 }

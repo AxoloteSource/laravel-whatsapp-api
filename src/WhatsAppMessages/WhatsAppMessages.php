@@ -23,6 +23,7 @@ use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Text\TextMessage;
  */
 class WhatsAppMessages
 {
+    protected static bool $isFake = false;
 
     public static function interactiveButtons(string $to): InteractiveButtons
     {
@@ -81,4 +82,16 @@ class WhatsAppMessages
         return new Raw($request, $to, $params);
     }
 
+    /**
+     * @throws \Exception
+     */
+    public static function fake(): void
+    {
+        self::$isFake = true;
+    }
+
+    public static function isFake(): bool
+    {
+        return self::$isFake;
+    }
 }
