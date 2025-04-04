@@ -4,12 +4,18 @@ namespace Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Templates\C
 
 class Params
 {
-    public static function text(string $text) : array
+    public static function text(string $text, ?string $parameterName = null) : array
     {
-        return [
+        $payload = [
             'type' => 'text',
             'text' => $text
         ];
+
+        if ($parameterName) {
+            $payload['parameter_name'] = $parameterName;
+        }
+
+        return $payload;
     }
 
     public static function button(string $payload): array
