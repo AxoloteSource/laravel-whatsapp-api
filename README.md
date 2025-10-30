@@ -31,6 +31,12 @@ $whatsappMessage = WhatsAppMessages::templete($phoneNumber)
         ButtonComponent::create([
             Params::button('no')
         ]),
+        ButtonComponent::create(
+            [
+                Params::button("history/login?folio=123ABC")
+            ],
+            ButtonComponent::SUB_TYPE_URL
+        ),
         ButtonComponent::create([
             Params::button('never')
         ])
