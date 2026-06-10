@@ -55,7 +55,7 @@ return [
     |
     */
 
-    'api' => env('WHATSAPP_BUSINESS_API', 'https://graph.facebook.com/v15.0/'),
+    'api' => env('WHATSAPP_BUSINESS_API', 'https://graph.facebook.com/v23.0/'),
 
     /*
     |--------------------------------------------------------------------------
