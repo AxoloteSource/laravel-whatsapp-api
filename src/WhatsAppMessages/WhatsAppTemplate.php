@@ -8,6 +8,7 @@ use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Enums\TemplateStatus;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Templates\TemplateList;
 use BadMethodCallException;
 use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 use InvalidArgumentException;
 
@@ -17,10 +18,7 @@ class WhatsAppTemplate
 
     protected array $fields = [];
 
-    protected int $limit = 10;
-
     protected array $params = [];
-    private bool $isAll = false;
 
     /**
      * Handle static calls to the class
@@ -64,17 +62,15 @@ class WhatsAppTemplate
      *
      * @throws ConnectionException
      */
-    public static function all(): TemplateList
+    public static function all(): Collection
     {
         $template = new WhatsAppTemplate();
-        $template->isAll = true;
-
         return $template->get();
     }
 
     protected function limit(int $limit): self
     {
-        $this->limit = $limit;
+        $this->params['limit'] = $limit;
         return $this;
     }
 
@@ -168,12 +164,12 @@ class WhatsAppTemplate
     /**
      * List all message templates for the given WABA ID (account_id in config)
      *
-     * @return TemplateList
+     * @return Collection
      * @throws ConnectionException
      */
-    protected function get(): TemplateList
+    protected function get(): Collection
     {
-        return $this->fetch();
+        return $this->list()->data();
     }
 
     /**
@@ -184,7 +180,7 @@ class WhatsAppTemplate
      */
     protected function list(): TemplateList
     {
-        return $this->get();
+        return $this->fetch();
     }
 
     /**
@@ -205,10 +201,6 @@ class WhatsAppTemplate
             $url = "$this->baseUrl$accountId/message_templates";
 
             $queryParams = $this->params;
-
-            if (! $this->isAll) {
-                $queryParams['limit'] = $this->limit;
-            }
 
             foreach ($queryParams as $key => $value) {
                 if (is_array($value) && in_array($key, ['status', 'category'])) {

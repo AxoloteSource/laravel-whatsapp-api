@@ -6,6 +6,7 @@ use Axolotesource\LaravelWhatsappApi\Tests\TestCase;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\WhatsAppTemplate;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Enums\TemplateStatus;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\WhatsAppMessages;
+use Illuminate\Support\Collection;
 
 class WhatsAppTemplateTest extends TestCase
 {
@@ -21,10 +22,10 @@ class WhatsAppTemplateTest extends TestCase
         $template->limit(50);
         
         $reflection = new \ReflectionClass($template);
-        $property = $reflection->getProperty('limit');
+        $property = $reflection->getProperty('params');
         $property->setAccessible(true);
         
-        $this->assertEquals(50, $property->getValue($template));
+        $this->assertEquals(50, $property->getValue($template)['limit']);
     }
 
     public function test_it_can_add_where_filter()
@@ -78,9 +79,9 @@ class WhatsAppTemplateTest extends TestCase
         $template = new WhatsAppTemplate();
         $result = $template->get();
         
-        $this->assertInstanceOf(\Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Templates\TemplateList::class, $result);
-        $this->assertCount(1, $result->data());
-        $this->assertEquals('hello_world', $result->data()->first()->name);
+        $this->assertInstanceOf(Collection::class, $result);
+        $this->assertCount(1, $result);
+        $this->assertEquals('hello_world', $result->first()->name);
     }
 
     public function test_it_can_select_fields()
@@ -111,10 +112,10 @@ class WhatsAppTemplateTest extends TestCase
         $this->assertInstanceOf(WhatsAppTemplate::class, $template);
         
         $reflection = new \ReflectionClass($template);
-        $property = $reflection->getProperty('limit');
+        $property = $reflection->getProperty('params');
         $property->setAccessible(true);
         
-        $this->assertEquals(25, $property->getValue($template));
+        $this->assertEquals(25, $property->getValue($template)['limit']);
     }
 
     public function test_it_can_call_where_statically()
@@ -160,7 +161,7 @@ class WhatsAppTemplateTest extends TestCase
     {
         WhatsAppMessages::fake();
         $result = WhatsAppTemplate::get();
-        $this->assertInstanceOf(\Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Templates\TemplateList::class, $result);
+        $this->assertInstanceOf(Collection::class, $result);
     }
 
     public function test_it_can_call_list_statically()
@@ -178,13 +179,13 @@ class WhatsAppTemplateTest extends TestCase
             ->where('status', TemplateStatus::APPROVED)
             ->get();
             
-        $this->assertInstanceOf(\Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Templates\TemplateList::class, $result);
+        $this->assertInstanceOf(Collection::class, $result);
     }
 
     public function test_it_can_all()
     {
         WhatsAppMessages::fake();
         $result = WhatsAppTemplate::all();
-        $this->assertInstanceOf(\Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Templates\TemplateList::class, $result);
+        $this->assertInstanceOf(Collection::class, $result);
     }
 }
