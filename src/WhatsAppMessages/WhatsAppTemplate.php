@@ -6,6 +6,8 @@ use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Enums\TemplateCategory;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Enums\TemplateFieldEnum;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Enums\TemplateStatus;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Templates\TemplateList;
+use BadMethodCallException;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use InvalidArgumentException;
 
@@ -18,6 +20,22 @@ class WhatsAppTemplate
     protected int $limit = 10;
 
     protected array $params = [];
+
+    /**
+     * Handle static calls to the class
+     *
+     * @param string $name
+     * @param array $arguments
+     * @return mixed
+     */
+    public static function __callStatic(string $name, array $arguments)
+    {
+        if (in_array($name, ['get', 'limit', 'select', 'where', 'whereIn'])) {
+            return (new self())->$name(...$arguments);
+        }
+
+        throw new BadMethodCallException("Method $name does not exist.");
+    }
 
     public function __construct()
     {
@@ -43,7 +61,7 @@ class WhatsAppTemplate
         $this->validateFilter($field, $value);
 
         if (in_array($field, ['status', 'category'])) {
-            $this->params[$field] = (array) $value;
+            $this->params[$field] = (array)$value;
         } else {
             $this->params[$field] = $value;
         }
@@ -76,38 +94,25 @@ class WhatsAppTemplate
      * @param mixed $value
      * @throws InvalidArgumentException
      */
-    protected function validateFilter(string $field, $value): void
+    protected function validateFilter(string $field, mixed $value): void
     {
         $allowedFilters = ['name', 'status', 'category', 'language'];
         if (!in_array($field, $allowedFilters)) {
-            throw new InvalidArgumentException("Filter field '{$field}' is not supported.");
+            throw new InvalidArgumentException("Filter field '$field' is not supported.");
         }
 
         switch ($field) {
             case 'status':
                 if (!in_array($value, TemplateStatus::all())) {
-                    throw new InvalidArgumentException("Invalid status: {$value}");
+                    throw new InvalidArgumentException("Invalid status: $value");
                 }
                 break;
             case 'category':
                 if (!in_array($value, TemplateCategory::all())) {
-                    throw new InvalidArgumentException("Invalid category: {$value}");
+                    throw new InvalidArgumentException("Invalid category: $value");
                 }
                 break;
         }
-    }
-
-    /**
-     * Add a custom parameter to the request
-     *
-     * @param string $key
-     * @param mixed $value
-     * @return self
-     */
-    public function addParam(string $key, $value): self
-    {
-        $this->params[$key] = $value;
-        return $this;
     }
 
     /**
@@ -122,7 +127,7 @@ class WhatsAppTemplate
         $validFields = TemplateFieldEnum::all();
         foreach ($fields as $field) {
             if (!in_array($field, $validFields)) {
-                throw new InvalidArgumentException("Invalid field: {$field}");
+                throw new InvalidArgumentException("Invalid field: $field");
             }
         }
 
@@ -134,6 +139,7 @@ class WhatsAppTemplate
      * List all message templates for the given WABA ID (account_id in config)
      *
      * @return TemplateList
+     * @throws ConnectionException
      */
     public function get(): TemplateList
     {
@@ -141,26 +147,11 @@ class WhatsAppTemplate
     }
 
     /**
-     * Handle static calls to the class
-     *
-     * @param string $name
-     * @param array $arguments
-     * @return mixed
-     */
-    public static function __callStatic($name, $arguments)
-    {
-        if (in_array($name, ['list', 'select', 'where', 'whereIn'])) {
-            return (new self())->$name(...$arguments);
-        }
-
-        throw new \BadMethodCallException("Method {$name} does not exist.");
-    }
-
-    /**
      * Fetch templates from a given URL or the default one
      *
      * @param string|null $url
      * @return TemplateList
+     * @throws ConnectionException
      */
     public function fetch(?string $url = null): TemplateList
     {
@@ -170,7 +161,7 @@ class WhatsAppTemplate
 
         if (!$url) {
             $accountId = config('laravel-whatsapp-api.account_id');
-            $url = "{$this->baseUrl}{$accountId}/message_templates";
+            $url = "$this->baseUrl$accountId/message_templates";
 
             $queryParams = $this->params;
             $queryParams['limit'] = $this->limit;
@@ -189,7 +180,7 @@ class WhatsAppTemplate
         }
 
         $response = Http::withHeaders([
-            'Authorization' => "Bearer {$this->bearer}",
+            'Authorization' => "Bearer $this->bearer",
             'Content-Type' => "application/json"
         ])->get($url);
 
@@ -217,7 +208,7 @@ class WhatsAppTemplate
             (!empty($parts['query']) ? '?' . $parts['query'] : '');
     }
 
-    private function initializeFakeResponse()
+    private function initializeFakeResponse(): void
     {
         Http::fake([
             '*' => Http::response([
@@ -237,7 +228,7 @@ class WhatsAppTemplate
                         'after' => 'MQ=='
                     ]
                 ]
-            ], 200),
+            ]),
         ]);
     }
 }
