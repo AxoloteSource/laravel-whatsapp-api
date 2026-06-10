@@ -30,8 +30,24 @@ class WhatsAppTemplate
      */
     public static function __callStatic(string $name, array $arguments)
     {
-        if (in_array($name, ['get', 'limit', 'select', 'where', 'whereIn'])) {
+        if (in_array($name, ['get', 'list', 'limit', 'select', 'where', 'whereIn'])) {
             return (new self())->$name(...$arguments);
+        }
+
+        throw new BadMethodCallException("Method $name does not exist.");
+    }
+
+    /**
+     * Handle instance calls to the class
+     *
+     * @param string $name
+     * @param array $arguments
+     * @return mixed
+     */
+    public function __call(string $name, array $arguments)
+    {
+        if (in_array($name, ['get', 'list', 'limit', 'select', 'where', 'whereIn'])) {
+            return $this->$name(...$arguments);
         }
 
         throw new BadMethodCallException("Method $name does not exist.");
@@ -42,7 +58,7 @@ class WhatsAppTemplate
         $this->initialize();
     }
 
-    public function limit(int $limit): self
+    protected function limit(int $limit): self
     {
         $this->limit = $limit;
         return $this;
@@ -56,7 +72,7 @@ class WhatsAppTemplate
      * @return self
      * @throws InvalidArgumentException
      */
-    public function where(string $field, mixed $value): self
+    protected function where(string $field, mixed $value): self
     {
         $this->validateFilter($field, $value);
 
@@ -77,7 +93,7 @@ class WhatsAppTemplate
      * @return self
      * @throws InvalidArgumentException
      */
-    public function whereIn(string $field, array $values): self
+    protected function whereIn(string $field, array $values): self
     {
         foreach ($values as $value) {
             $this->validateFilter($field, $value);
@@ -122,7 +138,7 @@ class WhatsAppTemplate
      * @return self
      * @throws InvalidArgumentException
      */
-    public function select(array $fields): self
+    protected function select(array $fields): self
     {
         $validFields = TemplateFieldEnum::all();
         foreach ($fields as $field) {
@@ -141,9 +157,20 @@ class WhatsAppTemplate
      * @return TemplateList
      * @throws ConnectionException
      */
-    public function get(): TemplateList
+    protected function get(): TemplateList
     {
         return $this->fetch();
+    }
+
+    /**
+     * Alias for get()
+     *
+     * @return TemplateList
+     * @throws ConnectionException
+     */
+    protected function list(): TemplateList
+    {
+        return $this->get();
     }
 
     /**

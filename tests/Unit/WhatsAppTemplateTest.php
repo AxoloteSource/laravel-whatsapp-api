@@ -104,4 +104,80 @@ class WhatsAppTemplateTest extends TestCase
         $template = new WhatsAppTemplate();
         $template->select(['name', 'invalid_field']);
     }
+
+    public function test_it_can_call_limit_statically()
+    {
+        $template = WhatsAppTemplate::limit(25);
+        $this->assertInstanceOf(WhatsAppTemplate::class, $template);
+        
+        $reflection = new \ReflectionClass($template);
+        $property = $reflection->getProperty('limit');
+        $property->setAccessible(true);
+        
+        $this->assertEquals(25, $property->getValue($template));
+    }
+
+    public function test_it_can_call_where_statically()
+    {
+        $template = WhatsAppTemplate::where('status', TemplateStatus::APPROVED);
+        $this->assertInstanceOf(WhatsAppTemplate::class, $template);
+        
+        $reflection = new \ReflectionClass($template);
+        $property = $reflection->getProperty('params');
+        $property->setAccessible(true);
+        
+        $params = $property->getValue($template);
+        $this->assertEquals([TemplateStatus::APPROVED], $params['status']);
+    }
+
+    public function test_it_can_call_where_in_statically()
+    {
+        $template = WhatsAppTemplate::whereIn('status', [TemplateStatus::APPROVED, TemplateStatus::PENDING]);
+        $this->assertInstanceOf(WhatsAppTemplate::class, $template);
+        
+        $reflection = new \ReflectionClass($template);
+        $property = $reflection->getProperty('params');
+        $property->setAccessible(true);
+        
+        $params = $property->getValue($template);
+        $this->assertEquals([TemplateStatus::APPROVED, TemplateStatus::PENDING], $params['status']);
+    }
+
+    public function test_it_can_call_select_statically()
+    {
+        $fields = ['name', 'status'];
+        $template = WhatsAppTemplate::select($fields);
+        $this->assertInstanceOf(WhatsAppTemplate::class, $template);
+        
+        $reflection = new \ReflectionClass($template);
+        $property = $reflection->getProperty('fields');
+        $property->setAccessible(true);
+        
+        $this->assertEquals($fields, $property->getValue($template));
+    }
+
+    public function test_it_can_call_get_statically()
+    {
+        WhatsAppMessages::fake();
+        $result = WhatsAppTemplate::get();
+        $this->assertInstanceOf(\Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Templates\TemplateList::class, $result);
+    }
+
+    public function test_it_can_call_list_statically()
+    {
+        WhatsAppMessages::fake();
+        $result = WhatsAppTemplate::list();
+        $this->assertInstanceOf(\Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Templates\TemplateList::class, $result);
+    }
+
+    public function test_it_can_chain_static_calls()
+    {
+        WhatsAppMessages::fake();
+        $result = WhatsAppTemplate::select(['name', 'status'])
+            ->limit(5)
+            ->where('status', TemplateStatus::APPROVED)
+            ->get();
+            
+        $this->assertInstanceOf(\Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Templates\TemplateList::class, $result);
+    }
 }
