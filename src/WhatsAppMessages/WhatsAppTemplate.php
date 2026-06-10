@@ -20,6 +20,7 @@ class WhatsAppTemplate
     protected int $limit = 10;
 
     protected array $params = [];
+    private bool $isAll = false;
 
     /**
      * Handle static calls to the class
@@ -30,7 +31,7 @@ class WhatsAppTemplate
      */
     public static function __callStatic(string $name, array $arguments)
     {
-        if (in_array($name, ['get', 'list', 'limit', 'select', 'where', 'whereIn'])) {
+        if (in_array($name, ['get', 'list', 'limit', 'select', 'where', 'whereIn', 'all'])) {
             return (new self())->$name(...$arguments);
         }
 
@@ -46,7 +47,7 @@ class WhatsAppTemplate
      */
     public function __call(string $name, array $arguments)
     {
-        if (in_array($name, ['get', 'list', 'limit', 'select', 'where', 'whereIn'])) {
+        if (in_array($name, ['get', 'list', 'limit', 'select', 'where', 'whereIn', 'all'])) {
             return $this->$name(...$arguments);
         }
 
@@ -56,6 +57,19 @@ class WhatsAppTemplate
     public function __construct()
     {
         $this->initialize();
+    }
+
+    /**
+     * List all message templates for the given WABA ID (account_id in config)
+     *
+     * @throws ConnectionException
+     */
+    public static function all(): TemplateList
+    {
+        $template = new WhatsAppTemplate();
+        $template->isAll = true;
+
+        return $template->get();
     }
 
     protected function limit(int $limit): self
@@ -191,7 +205,10 @@ class WhatsAppTemplate
             $url = "$this->baseUrl$accountId/message_templates";
 
             $queryParams = $this->params;
-            $queryParams['limit'] = $this->limit;
+
+            if (! $this->isAll) {
+                $queryParams['limit'] = $this->limit;
+            }
 
             foreach ($queryParams as $key => $value) {
                 if (is_array($value) && in_array($key, ['status', 'category'])) {

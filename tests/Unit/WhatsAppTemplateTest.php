@@ -180,4 +180,11 @@ class WhatsAppTemplateTest extends TestCase
             
         $this->assertInstanceOf(\Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Templates\TemplateList::class, $result);
     }
+
+    public function test_it_can_all()
+    {
+        WhatsAppMessages::fake();
+        $result = WhatsAppTemplate::all();
+        $this->assertInstanceOf(\Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Templates\TemplateList::class, $result);
+    }
 }
