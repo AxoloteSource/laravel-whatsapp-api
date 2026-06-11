@@ -1,5 +1,4 @@
 {
-    "version": "1.0.0",
     "name": "axolotesource/laravel-whatsapp-api",
     "description": "This Laravel package facilitates sending WhatsApp messages seamlessly within your application. With easy integration, it empowers developers to incorporate WhatsApp messaging functionality, enhancing user engagement and communication in a straightforward manner.",
     "keywords": [
