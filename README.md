@@ -1,25 +1,100 @@
-### INSTALL
+# Laravel WhatsApp API
 
+[![Latest Version](https://img.shields.io/packagist/v/axolotesource/laravel-whatsapp-api)](https://packagist.org/packages/axolotesource/laravel-whatsapp-api)
+[![Total Downloads](https://img.shields.io/packagist/dt/axolotesource/laravel-whatsapp-api.svg?style=flat-square)](https://packagist.org/packages/axolotesource/laravel-whatsapp-api)
+[![License](https://img.shields.io/packagist/l/axolotesource/laravel-whatsapp-api)](LICENSE)
 
-``composer require axolotesource/laravel-whatsapp-api``
+Laravel package to easily send WhatsApp messages using the WhatsApp Cloud API (Graph API).
 
-To publish the configuration file, run the following command:
+## Table of Contents
+
+- [Installation](#installation)
+- [Environment variables](#environment-variables-env)
+- [Features](#features)
+- [Usage](#usage)
+  - [Text messages](#text-messages)
+  - [Sending templates](#sending-templates)
+  - [Interactive buttons](#interactive-buttons)
+  - [Interactive lists](#interactive-lists)
+  - [Sending images](#sending-images)
+  - [Sending video by URL](#sending-video-by-url)
+  - [Uploading media](#uploading-media)
+  - [Raw messages](#raw-messages)
+  - [Querying registered templates on Meta](#querying-registered-templates-on-meta)
+  - [Test mode](#test-mode)
+  - [toArray method](#toarray-method)
+- [API Reference](#api-reference)
+- [License](#license)
+
+## Installation
 
 ```bash
-php artisan vendor:publish
+composer require axolotesource/laravel-whatsapp-api
 ```
-When prompted to select the provider, choose Axolotesource\LaravelWhatsappApi\LaravelWhatsappApiServiceProvider.
 
-### [WhatsAppMessages](src%2FWhatsAppMessages%2FWhatsAppMessages.php)
+Publish the configuration file:
 
-#### Examples
+```bash
+php artisan vendor:publish --provider="Axolotesource\LaravelWhatsappApi\LaravelWhatsappApiServiceProvider"
+```
 
-##### templete(string $to, string $templateName = null): Template
+### Environment variables (`.env`)
 
-This method allows you to send a template-type message (this is the first message that should be sent to the client). For the second parameter, it can be null, and if so, it retrieves the value from config('laravel-whatsapp-api.default_initial_template');.
+```env
+WHATSAPP_BUSINESS_ACCOUNT_ID=
+WHATSAPP_BUSINESS_PHONE_NUMBER_ID=
+WHATSAPP_BUSINESS_BEARER=
+WHATSAPP_HOOK_VERIFY_TOKEN=
+WHATSAPP_BUSINESS_API=https://graph.facebook.com/v23.0/
+WHATSAPP_BUSINESS_TEST_NUMBER=
+WHATSAPP_BUSINESS_TEST_MODE=false
+DEFAULT_INITIAL_TEMPLETE=default
+WHATSAPP_RAW_TEMPLETE=
+TEMPLETE_IMAGEN_HEAD=
+DISABLE_WHATSAPP_HOOK=false
+REPLICATE_WHATSAPP_HOOK_URLS=[]
+```
+
+### Features
+
+| Feature | Status |
+|---|---|
+| Text messages | ✅ |
+| Templates with components | ✅ |
+| Interactive buttons (up to 3) | ✅ |
+| Interactive lists with sections | ✅ |
+| Images (by media ID) | ✅ |
+| Images (by URL) | ✅ |
+| Videos (by URL) | ✅ |
+| Raw messages | ✅ |
+| Image upload | ✅ |
+| Video upload | ✅ |
+| Retrieve media metadata | ✅ |
+| Query registered templates (WhatsAppTemplate) | ✅ |
+| Template pagination | ✅ |
+| Test / fake mode | ✅ |
+| Document sending | ❌ (TODO) |
+| Document upload | ❌ (TODO) |
+| Audio upload | ❌ (TODO) |
+| Sticker upload | ❌ (TODO) |
+| Audio messages | ❌ |
+| Sticker messages | ❌ |
+| Location messages | ❌ |
+| Contact messages | ❌ |
+| Reaction messages | ❌ |
+| Catalogs / multi-product | ❌ |
+| Flow messages | ❌ |
+| Webhook handling | ❌ |
+| Business profile | ❌ |
+
+## Usage
+
+### Sending templates
+
+The first message to a new contact must be a Meta-approved template.
 
 ```php
-$whatsappMessage = WhatsAppMessages::templete($phoneNumber)
+WhatsAppMessages::templete('521234567890')
     ->language('es_MX')
     ->addComponents([
         BodyComponent::create([
@@ -33,7 +108,7 @@ $whatsappMessage = WhatsAppMessages::templete($phoneNumber)
         ]),
         ButtonComponent::create(
             [
-                Params::button("history/login?folio=123ABC")
+                Params::button('history/login?folio=123ABC')
             ],
             ButtonComponent::SUB_TYPE_URL
         ),
@@ -43,19 +118,264 @@ $whatsappMessage = WhatsAppMessages::templete($phoneNumber)
     ]);
 ```
 
-##### interactiveButtons(string $to): InteractiveButtons
+If you don't pass a template name, it will use the `default_initial_templete` config value.
+
+#### Template components
+
+- **BodyComponent** – Message body
+- **HeaderComponent** – Header
+- **ButtonComponent** – Buttons (supports `QUICK_REPLY` and `URL`)
+
+#### Parameters
 
 ```php
-WhatsAppMessages::interactiveButtons($phoneNumber)
-    ->setHeaderImage(
-        'https://url.com/test.jpg'
-    )
-    ->addButton('Button 1', 1)
-    ->addButton('Button 2', 2)
-    ->addButton('Button 3', 3)
-    ->body('This is te body message')
+Params::text(string $text, ?string $parameterName = null)
+Params::button(string $payload)
+Params::imageFromUrl(string $url)
+```
+
+### Text messages
+
+```php
+use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\WhatsAppMessages;
+
+WhatsAppMessages::text('521234567890')
+    ->body('Hello, this is a text message')
+    ->send();
+
+// You can also disable URL previews
+WhatsAppMessages::text('521234567890', false)
+    ->body('Message without URL preview')
     ->send();
 ```
 
+Using `textMessage` (replaces `text`, which is deprecated):
 
-## Coming song more documentation....
+```php
+WhatsAppMessages::textMessage('521234567890')
+    ->body('Hello world')
+    ->send();
+```
+
+### Interactive buttons
+
+Up to 3 quick reply buttons.
+
+```php
+WhatsAppMessages::interactiveButtons('521234567890')
+    ->setHeaderText('Optional header')
+    ->body('Message body')
+    ->footer('Optional footer')
+    ->addButton('Option 1', 1)
+    ->addButton('Option 2', 2)
+    ->addButton('Option 3', 3)
+    ->send();
+```
+
+Also supports media headers:
+
+```php
+WhatsAppMessages::interactiveButtons('521234567890')
+    ->setHeaderImage('https://example.com/image.jpg')
+    ->body('Message body')
+    ->addButton('Yes', 'yes')
+    ->addButton('No', 'no')
+    ->send();
+```
+
+### Interactive lists
+
+```php
+WhatsAppMessages::interactiveList('521234567890')
+    ->body('Choose an option:')
+    ->button('View options')
+    ->addSection('Section 1', [
+        Row::create('Row title 1', 'id-1', 'Optional description'),
+        Row::create('Row title 2', 'id-2'),
+    ])
+    ->addSection('Section 2', [
+        Row::create('Row title 3', 'id-3'),
+    ])
+    ->send();
+```
+
+### Sending images
+
+By media ID (requires uploading the file first):
+
+```php
+$media = WhatsAppMedia::image('/local/path/image.jpg')->upload();
+
+WhatsAppMessages::image('521234567890', $media)
+    ->send();
+```
+
+By URL:
+
+```php
+WhatsAppMessages::imageByUrl('521234567890', 'https://example.com/image.jpg')
+    ->send();
+```
+
+### Sending video by URL
+
+```php
+WhatsAppMessages::videoByUrl('521234567890', 'https://example.com/video.mp4')
+    ->send();
+```
+
+### Uploading media
+
+```php
+use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\WhatsAppMedia;
+
+// Upload image
+$media = WhatsAppMedia::image('/path/image.jpg')->upload();
+
+// Upload video
+$media = WhatsAppMedia::video('/path/video.mp4')->upload();
+
+// Retrieve media metadata by ID
+$media = WhatsAppMedia::retrieve('MEDIA_ID')->get();
+```
+
+### Raw messages
+
+For fully custom requests:
+
+```php
+WhatsAppMessages::raw([
+    'type' => 'text',
+    'text' => [
+        'body' => 'Hello {{name}}'
+    ],
+], '521234567890', ['name' => 'John'])
+    ->send();
+```
+
+### Querying registered templates on Meta
+
+`WhatsAppTemplate` allows you to retrieve information about templates registered in your WhatsApp Business account.
+
+```php
+use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\WhatsAppTemplate;
+```
+
+#### Get all templates
+
+```php
+$templates = WhatsAppTemplate::all(); // Collection of TemplateDTO
+```
+
+#### Filters
+
+```php
+// By status
+WhatsAppTemplate::where('status', 'APPROVED')->get();
+
+// By category
+WhatsAppTemplate::where('category', 'UTILITY')->get();
+
+// By name
+WhatsAppTemplate::where('name', 'my_template')->get();
+
+// By language
+WhatsAppTemplate::where('language', 'es_MX')->get();
+
+// Multiple values
+WhatsAppTemplate::whereIn('status', ['APPROVED', 'PENDING'])->get();
+```
+
+#### Selecting fields
+
+```php
+WhatsAppTemplate::select(['name', 'status', 'category', 'language', 'components'])->get();
+```
+
+Available fields: `id`, `name`, `status`, `category`, `language`, `components`, `last_updated_time`, `quality_score`, `rejected_reason`.
+
+#### Limit results
+
+```php
+WhatsAppTemplate::limit(10)->get();
+```
+
+#### Pagination
+
+```php
+$list = WhatsAppTemplate::list(); // TemplateList
+
+foreach ($list->data() as $template) {
+    echo $template->name . ' - ' . $template->status;
+}
+
+if ($list->hasNextPage()) {
+    $nextPage = $list->nextPage();
+}
+```
+
+#### TemplateDTO
+
+Each template is returned as a `TemplateDTO` with the following properties:
+
+| Property | Type | Description |
+|---|---|---|
+| `id` | `string` | Template ID |
+| `name` | `string` | Template name |
+| `status` | `string` | Status (`APPROVED`, `PENDING`, `REJECTED`, etc.) |
+| `category` | `string` | Category (`MARKETING`, `UTILITY`, `AUTHENTICATION`) |
+| `language` | `string` | Language code |
+| `components` | `array` | Array of `ComponentDTO` |
+
+#### Fake mode
+
+```php
+WhatsAppMessages::fake();
+WhatsAppTemplate::all(); // returns simulated data
+```
+
+### Test mode
+
+```php
+// Activate to send all messages to the test number
+WhatsAppMessages::fake();
+```
+
+When `WHATSAPP_BUSINESS_TEST_MODE=true`, all messages are automatically redirected to `WHATSAPP_BUSINESS_TEST_NUMBER`.
+
+### `toArray()` method
+
+You can get the payload without sending it:
+
+```php
+$payload = WhatsAppMessages::text('521234567890')
+    ->body('Hello')
+    ->toArray();
+```
+
+## API Reference
+
+| Method | Description |
+|---|---|
+| `WhatsAppMessages::text($to, $previewUrl)` | Simple text message |
+| `WhatsAppMessages::textMessage($to, $previewUrl)` | Text message (replaces `text`) |
+| `WhatsAppMessages::templete($to, $templateName)` | Send approved template |
+| `WhatsAppMessages::interactiveButtons($to)` | Interactive buttons (up to 3) |
+| `WhatsAppMessages::interactiveList($to)` | Interactive list with sections |
+| `WhatsAppMessages::image($to, Media $media)` | Image by media ID |
+| `WhatsAppMessages::imageByUrl($to, $url)` | Image by URL |
+| `WhatsAppMessages::videoByUrl($to, $url)` | Video by URL |
+| `WhatsAppMessages::raw($request, $to, $params)` | Raw payload with variable replacement |
+| `WhatsAppMessages::test($to)` | Send "hello_world" test template |
+| `WhatsAppMessages::fake()` | Enable fake responses for testing |
+| `WhatsAppTemplate::all()` | Get all registered templates |
+| `WhatsAppTemplate::get()` | Get templates with filters |
+| `WhatsAppTemplate::list()` | Get templates with pagination (`TemplateList`) |
+| `WhatsAppTemplate::where($field, $value)` | Filter by status, category, name, language |
+| `WhatsAppTemplate::whereIn($field, $values)` | Filter by multiple values |
+| `WhatsAppTemplate::select($fields)` | Select specific fields |
+| `WhatsAppTemplate::limit($n)` | Limit number of results |
+
+## License
+
+MIT
