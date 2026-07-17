@@ -28,6 +28,7 @@ Paquete de Laravel para enviar mensajes de WhatsApp de forma sencilla utilizando
   - [Mensajes en crudo (raw)](#mensajes-en-crudo-raw)
   - [Consultar plantillas registradas en Meta](#consultar-plantillas-registradas-en-meta)
   - [Consultar información del número de teléfono](#consultar-información-del-número-de-teléfono)
+  - [Consultar perfil de negocio](#consultar-perfil-de-negocio)
   - [Modo de prueba](#modo-de-prueba)
   - [Método toArray](#método-toarray)
 - [Referencia de API](#referencia-de-api)
@@ -93,7 +94,7 @@ REPLICATE_WHATSAPP_HOOK_URLS=[]
 | Catálogos / multi-producto | ❌ |
 | Mensajes Flow | ❌ |
 | Manejo de webhooks | ❌ |
-| Perfil de negocio | ❌ |
+| Perfil de negocio | ✅ |
 
 ## Uso
 
@@ -361,6 +362,45 @@ WhatsAppMessages::reaction('521234567890')
     ->send();
 ```
 
+### Consultar perfil de negocio
+
+`WhatsAppBusinessProfile` permite obtener la información del perfil de tu cuenta de WhatsApp Business (about, descripción, email, sitios web, foto de perfil, vertical, dirección):
+
+```php
+use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\WhatsAppBusinessProfile;
+
+$profile = WhatsAppBusinessProfile::info()->get();
+
+echo $profile->about;              // Descripción corta
+echo $profile->description;        // Descripción larga
+echo $profile->email;              // Email de contacto
+echo $profile->profilePictureUrl;  // URL de la foto de perfil
+echo $profile->vertical;           // Vertical de la industria (RETAIL, etc.)
+echo $profile->websites[0];        // Primer sitio web
+echo $profile->address;            // Dirección del negocio
+```
+
+#### BusinessProfileDTO
+
+El perfil de negocio se devuelve como un `BusinessProfileDTO`:
+
+| Propiedad | Tipo | Descripción |
+|---|---|---|
+| `about` | `string` | Descripción corta del negocio (máx 139 caracteres) |
+| `description` | `string` | Descripción larga del negocio (máx 512 caracteres) |
+| `email` | `string` | Email de contacto del negocio |
+| `profilePictureUrl` | `string` | URL de la foto de perfil |
+| `vertical` | `string` | Vertical de la industria |
+| `websites` | `array` | Array de URLs de sitios web |
+| `address` | `string\|null` | Dirección del negocio |
+
+#### Modo simulado (fake)
+
+```php
+WhatsAppMessages::fake();
+$profile = WhatsAppBusinessProfile::info()->get();
+```
+
 ### Subir medios
 
 ```php
@@ -573,6 +613,7 @@ $payload = WhatsAppMessages::text('521234567890')
 | `WhatsAppTemplate::select($fields)` | Seleccionar campos específicos |
 | `WhatsAppTemplate::limit($n)` | Limitar número de resultados |
 | `WhatsAppPhoneNumber::info()` | Obtener instancia de información del número de teléfono |
+| `WhatsAppBusinessProfile::info()` | Obtener instancia del perfil de negocio |
 
 ## Licencia
 

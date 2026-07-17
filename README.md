@@ -28,6 +28,7 @@ Laravel package to easily send WhatsApp messages using the WhatsApp Cloud API (G
   - [Raw messages](#raw-messages)
   - [Querying registered templates on Meta](#querying-registered-templates-on-meta)
   - [Querying phone number info](#querying-phone-number-info)
+  - [Querying business profile](#querying-business-profile)
   - [Test mode](#test-mode)
   - [toArray method](#toarray-method)
 - [API Reference](#api-reference)
@@ -93,7 +94,7 @@ REPLICATE_WHATSAPP_HOOK_URLS=[]
 | Catalogs / multi-product | ❌ |
 | Flow messages | ❌ |
 | Webhook handling | ❌ |
-| Business profile | ❌ |
+| Business profile | ✅ |
 
 ## Usage
 
@@ -361,6 +362,45 @@ WhatsAppMessages::reaction('521234567890')
     ->send();
 ```
 
+### Querying business profile
+
+`WhatsAppBusinessProfile` allows you to retrieve your WhatsApp Business profile information (about, description, email, websites, profile picture, vertical, address):
+
+```php
+use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\WhatsAppBusinessProfile;
+
+$profile = WhatsAppBusinessProfile::info()->get();
+
+echo $profile->about;              // Short description
+echo $profile->description;        // Long description
+echo $profile->email;              // Contact email
+echo $profile->profilePictureUrl;  // Profile picture URL
+echo $profile->vertical;           // Industry vertical (RETAIL, etc.)
+echo $profile->websites[0];        // First website
+echo $profile->address;            // Business address
+```
+
+#### BusinessProfileDTO
+
+The business profile is returned as a `BusinessProfileDTO`:
+
+| Property | Type | Description |
+|---|---|---|
+| `about` | `string` | Short business description (max 139 chars) |
+| `description` | `string` | Long business description (max 512 chars) |
+| `email` | `string` | Business contact email |
+| `profilePictureUrl` | `string` | URL of the profile picture |
+| `vertical` | `string` | Industry vertical |
+| `websites` | `array` | Array of website URLs |
+| `address` | `string\|null` | Business address |
+
+#### Fake mode
+
+```php
+WhatsAppMessages::fake();
+$profile = WhatsAppBusinessProfile::info()->get();
+```
+
 ### Uploading media
 
 ```php
@@ -573,6 +613,7 @@ $payload = WhatsAppMessages::text('521234567890')
 | `WhatsAppTemplate::select($fields)` | Select specific fields |
 | `WhatsAppTemplate::limit($n)` | Limit number of results |
 | `WhatsAppPhoneNumber::info()` | Get phone number info instance |
+| `WhatsAppBusinessProfile::info()` | Get business profile instance |
 
 ## License
 
