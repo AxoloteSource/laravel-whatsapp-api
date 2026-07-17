@@ -24,6 +24,9 @@ Laravel package to easily send WhatsApp messages using the WhatsApp Cloud API (G
   - [Sending location](#sending-location)
   - [Sending contacts](#sending-contacts)
   - [Sending reactions](#sending-reactions)
+  - [Sending catalog messages](#sending-catalog-messages)
+  - [Sending product lists](#sending-product-lists)
+  - [Sending flow messages](#sending-flow-messages)
   - [Uploading media](#uploading-media)
   - [Raw messages](#raw-messages)
   - [Querying registered templates on Meta](#querying-registered-templates-on-meta)
@@ -93,8 +96,8 @@ REPLICATE_WHATSAPP_HOOK_URLS=[]
 | Location messages | ✅ |
 | Contact messages | ✅ |
 | Reaction messages | ✅ |
-| Catalogs / multi-product | ❌ |
-| Flow messages | ❌ |
+| Catalogs / multi-product | ✅ |
+| Flow messages | ✅ |
 | Webhook handling | ✅ |
 | Business profile | ✅ |
 
@@ -363,6 +366,67 @@ WhatsAppMessages::reaction('521234567890')
     ->emoji('')
     ->send();
 ```
+
+### Sending catalog messages
+
+Display a multi-product catalog already linked to your WhatsApp Business account. The catalog must be set up via the Commerce Manager before sending.
+
+```php
+WhatsAppMessages::catalog('521234567890')
+    ->setHeaderText('Our catalog')
+    ->body('Browse our products and place an order')
+    ->footer('Free shipping over $50')
+    ->thumbnailProductRetailerId('prod-thumbnail-id')
+    ->send();
+```
+
+`thumbnailProductRetailerId` is optional — when set, it shows that product's image as the catalog preview.
+
+### Sending product lists
+
+Send a multi-product message organized in sections, sourced from a specific catalog:
+
+```php
+use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Interactive\ProductItem;
+use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Interactive\ProductSection;
+
+$section1 = ProductSection::create('Featured')
+    ->addProduct(ProductItem::create('laptop-pro-15'))
+    ->addProduct(ProductItem::create('laptop-air-13'));
+
+$section2 = ProductSection::create('Accessories')
+    ->addProduct(ProductItem::create('mouse-wireless'))
+    ->addProduct(ProductItem::create('keyboard-mech'));
+
+WhatsAppMessages::productList('521234567890', 'catalog_abc123')
+    ->setHeaderText('Top products')
+    ->body('Tap to view details')
+    ->footer('Limited stock')
+    ->addSection($section1)
+    ->addSection($section2)
+    ->send();
+```
+
+Section titles are limited to 24 characters.
+
+### Sending flow messages
+
+Send a Flow (WhatsApp Flows) interactive message. Flows let you build screens for surveys, account updates, support tickets, etc.
+
+```php
+WhatsAppMessages::flow('521234567890', 'flow_id_123')
+    ->setHeaderText('Customer survey')
+    ->body('Tell us how we\'re doing')
+    ->footer('Takes 1 minute')
+    ->flowToken('unique-token-per-recipient')
+    ->flowCta('Start survey')
+    ->flowMessageVersion('3')
+    ->flowAction(FlowMessage::FLOW_ACTION_NAVIGATE)
+    ->flowActionPayload(['screen' => 'WELCOME'])
+    ->send();
+```
+
+Available flow actions: `FLOW_ACTION_NAVIGATE` (default), `FLOW_ACTION_DATA_EXCHANGE`.
 
 ### Querying business profile
 
@@ -689,6 +753,9 @@ $payload = WhatsAppMessages::text('521234567890')
 | `WhatsAppMessages::location($to)` | Send a location message |
 | `WhatsAppMessages::contact($to)` | Send contact(s) message |
 | `WhatsAppMessages::reaction($to)` | Send a reaction to a message |
+| `WhatsAppMessages::catalog($to)` | Send a catalog message |
+| `WhatsAppMessages::productList($to, $catalogId)` | Send a multi-product list |
+| `WhatsAppMessages::flow($to, $flowId)` | Send a Flow message |
 | `WhatsAppMedia::document($path)` | Upload a document |
 | `WhatsAppMedia::audio($path)` | Upload audio |
 | `WhatsAppMedia::sticker($path)` | Upload sticker |

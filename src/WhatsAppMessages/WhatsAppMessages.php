@@ -7,8 +7,11 @@ use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Constants\MediaType;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Media\Media;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Media\MediaUrl;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Contact\ContactMessage;
+use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Interactive\CatalogMessage;
+use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Interactive\FlowMessage;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Interactive\InteractiveButtons;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Interactive\InteractiveList;
+use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Interactive\ProductListMessage;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Location\LocationMessage;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Media\AudioMessage;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Media\DocumentMessage;
@@ -109,6 +112,21 @@ class WhatsAppMessages
     public static function reaction(string $to): ReactionMessage
     {
         return new ReactionMessage($to);
+    }
+
+    public static function catalog(string $to): CatalogMessage
+    {
+        return new CatalogMessage($to);
+    }
+
+    public static function productList(string $to, string $catalogId): ProductListMessage
+    {
+        return new ProductListMessage($to, $catalogId);
+    }
+
+    public static function flow(string $to, string $flowId): FlowMessage
+    {
+        return new FlowMessage($to, $flowId);
     }
 
     public static function test(string $to)
