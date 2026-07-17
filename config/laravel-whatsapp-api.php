@@ -137,6 +137,29 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Disable routes
+    |--------------------------------------------------------------------------
+    |
+    | When true, the package will not register any HTTP routes (webhook GET
+    | and POST). Use this if you prefer to register the routes yourself in
+    | your own routes file. Defaults to true (routes are not registered).
+    |
+    */
+    'disable_routes' => env('DISABLE_WHATSAPP_ROUTES', true),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Webhook path
+    |--------------------------------------------------------------------------
+    |
+    | The path where the package registers the GET (verification) and POST
+    | (incoming events) webhook routes.
+    |
+    */
+    'webhook_path' => env('WHATSAPP_HOOK_PATH', 'whatsapp/webhook'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Replicate hook
     |--------------------------------------------------------------------------
     |

@@ -29,6 +29,7 @@ Paquete de Laravel para enviar mensajes de WhatsApp de forma sencilla utilizando
   - [Consultar plantillas registradas en Meta](#consultar-plantillas-registradas-en-meta)
   - [Consultar información del número de teléfono](#consultar-información-del-número-de-teléfono)
   - [Consultar perfil de negocio](#consultar-perfil-de-negocio)
+  - [Manejo de webhooks](#manejo-de-webhooks)
   - [Modo de prueba](#modo-de-prueba)
   - [Método toArray](#método-toarray)
 - [Referencia de API](#referencia-de-api)
@@ -60,6 +61,7 @@ DEFAULT_INITIAL_TEMPLETE=default
 WHATSAPP_RAW_TEMPLETE=
 TEMPLETE_IMAGEN_HEAD=
 DISABLE_WHATSAPP_HOOK=false
+DISABLE_WHATSAPP_ROUTES=true
 REPLICATE_WHATSAPP_HOOK_URLS=[]
 ```
 
@@ -93,7 +95,7 @@ REPLICATE_WHATSAPP_HOOK_URLS=[]
 | Mensajes de reacción | ✅ |
 | Catálogos / multi-producto | ❌ |
 | Mensajes Flow | ❌ |
-| Manejo de webhooks | ❌ |
+| Manejo de webhooks | ✅ |
 | Perfil de negocio | ✅ |
 
 ## Uso
@@ -401,6 +403,94 @@ WhatsAppMessages::fake();
 $profile = WhatsAppBusinessProfile::info()->get();
 ```
 
+### Manejo de webhooks
+
+El paquete puede auto-registrar un endpoint de webhook en `POST/GET /whatsapp/webhook` (configurable vía la clave `webhook_path`).
+
+Por **defecto las rutas NO se registran** (controlado por `disable_routes`). Esto es útil si prefieres registrar las rutas tú mismo en tu propio `routes/web.php` (por ejemplo, para aplicar middleware personalizado).
+
+El procesamiento del webhook está **habilitado por defecto** (`disable_hook = false`).
+
+#### Configuración
+
+Si quieres que el paquete auto-registre las rutas, configura `disable_routes=false` y proporciona un token de verificación:
+
+```env
+WHATSAPP_HOOK_VERIFY_TOKEN=tu-token-de-verificacion
+DISABLE_WHATSAPP_ROUTES=false
+```
+
+Si prefieres registrar las rutas tú mismo en `routes/web.php`, deja `disable_routes=true` (el default) y copia las definiciones desde `vendor/axolotesource/laravel-whatsapp-api/routes/web.php`.
+
+Para deshabilitar el procesamiento del webhook por completo (por ejemplo, para testing), configura `DISABLE_WHATSAPP_HOOK=true`.
+
+La ruta acepta:
+- **GET** — para el handshake de verificación de Meta (usa `hub_mode`, `hub_verify_token`, `hub_challenge`).
+- **POST** — para recibir eventos del webhook (text, button, interactive, statuses, errors).
+
+#### Parsear webhooks entrantes
+
+Usa el facade `WhatsAppWebhook` y `WebhookHandler` para parsear los payloads entrantes:
+
+```php
+use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\WhatsAppWebhook;
+
+public function webhook(\Illuminate\Http\Request $request)
+{
+    $payload = $request->all();
+    $handler = WhatsAppWebhook::handle($payload);
+
+    if ($handler->value()->hasStatuses()) {
+        foreach ($handler->statuses() as $status) {
+            // $status->getStatus() retorna 'sent', 'delivered', 'read' o 'failed'
+            if ($status->isDelivered()) {
+                // marca el mensaje como entregado
+            }
+        }
+
+        return;
+    }
+
+    $value = $handler->value();
+    $message = $value->firstMessage();
+
+    switch ($message->getType()) {
+        case 'text':
+            $text = $handler->text();
+            // $text->getText() -> cuerpo del mensaje
+            break;
+        case 'button':
+            $button = $handler->button();
+            // $button->getPayload() -> payload del botón
+            // $button->getText() -> texto del botón
+            break;
+        case 'interactive':
+            $interactive = $handler->interactive();
+            // $interactive->getType() -> 'button_reply' o 'list_reply'
+            // $interactive->getId() -> id de la opción seleccionada
+            // $interactive->getTitle() -> título de la opción seleccionada
+            // $interactive->getDescription() -> descripción (solo en listas)
+            break;
+    }
+}
+```
+
+#### Objeto Value
+
+`WebhookHandler::value()` retorna un objeto `Value` que envuelve el payload completo:
+
+| Propiedad | Tipo | Descripción |
+|---|---|---|
+| `messages` | `Message[]` | Mensajes entrantes |
+| `contacts` | `Contact[]` | Info de contacto por mensaje |
+| `statuses` | `array` | Eventos de status crudos |
+| `errors` | `array` | Errores del webhook (si los hay) |
+| `metadata` | `Metadata` | Metadata del número de teléfono |
+| `hasMessages()` | `bool` | True si el payload contiene mensajes |
+| `hasStatuses()` | `bool` | True si el payload contiene statuses |
+| `hasErrors()` | `bool` | True si el payload contiene errores |
+| `firstMessage()` | `?Message` | Primer mensaje o null |
+
 ### Subir medios
 
 ```php
@@ -614,6 +704,8 @@ $payload = WhatsAppMessages::text('521234567890')
 | `WhatsAppTemplate::limit($n)` | Limitar número de resultados |
 | `WhatsAppPhoneNumber::info()` | Obtener instancia de información del número de teléfono |
 | `WhatsAppBusinessProfile::info()` | Obtener instancia del perfil de negocio |
+| `WhatsAppWebhook::handle($payload)` | Parsear un payload de webhook entrante |
+| `WhatsAppWebhook::verify($mode, $token, $challenge)` | Verificar suscripción del webhook |
 
 ## Licencia
 

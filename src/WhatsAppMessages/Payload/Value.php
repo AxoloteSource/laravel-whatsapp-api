@@ -6,63 +6,79 @@ use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Payload\NestedClasses\Cont
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Payload\NestedClasses\Context;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Payload\NestedClasses\Message;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Payload\NestedClasses\Metadata;
+use Exception;
 
 class Value
 {
     public array $messages = [];
+    public array $contacts = [];
+    public array $statuses = [];
+    public array $errors = [];
     public Metadata $metadata;
-    public Contact $contact;
-
-    //TODO CREATE CLASS
-    //public Errors $errors
-    //public Statuses $statuses;
 
     public function __construct(array $value)
     {
-       /* $messages = collect([]);
-        foreach ($value['messages'] as $message) {
-            $contextId = null;
-            if (isset($message['context']['id'])) {
-                $contextId = new Context($message['context']['id']);
-            }
-
-            array_push($this->messages, new Message(
-                $message['from'],
-                $message['id'],
-                $message['timestamp'],
-                $message['type'],
-                $contextId
-            ));
+        if (!isset($value['metadata'])) {
+            throw new Exception("Webhook payload is missing 'metadata' field");
         }
 
-        //$messagePayload = ;
-
-        //$contactPayload = $payload['contacts'][$messageIndex];
-        $metadataPayload = $payload['metadata'];
-
-        $context = null;
-        if (isset($messagePayload['context']['id'])) {
-            $context = new Context($messagePayload['context']['id']);
-        }
-
-        $this->message = new Message(
-            $messagePayload['from'],
-            $messagePayload['id'],
-            $messagePayload['timestamp'],
-            $messagePayload['type'],
-            $context
-        );
-
+        $metadataPayload = $value['metadata'];
         $this->metadata = new Metadata(
             $metadataPayload['display_phone_number'],
             $metadataPayload['phone_number_id']
         );
 
-        $this->contact = new Contact(
-            $contactPayload['wa_id'],
-            $contactPayload['profile']['name']
-        );*/
+        if (isset($value['messages']) && is_array($value['messages'])) {
+            foreach ($value['messages'] as $index => $messagePayload) {
+                $context = null;
+                if (isset($messagePayload['context']['id'])) {
+                    $context = new Context($messagePayload['context']['id']);
+                }
+
+                $this->messages[] = new Message(
+                    $messagePayload['from'],
+                    $messagePayload['id'],
+                    $messagePayload['timestamp'],
+                    $messagePayload['type'],
+                    $context
+                );
+
+                if (isset($value['contacts'][$index])) {
+                    $contactPayload = $value['contacts'][$index];
+                    $this->contacts[] = new Contact(
+                        $contactPayload['wa_id'],
+                        $contactPayload['profile']['name'] ?? ''
+                    );
+                }
+            }
+        }
+
+        if (isset($value['statuses']) && is_array($value['statuses'])) {
+            $this->statuses = $value['statuses'];
+        }
+
+        if (isset($value['errors']) && is_array($value['errors'])) {
+            $this->errors = $value['errors'];
+        }
     }
 
+    public function hasMessages(): bool
+    {
+        return !empty($this->messages);
+    }
 
+    public function hasStatuses(): bool
+    {
+        return !empty($this->statuses);
+    }
+
+    public function hasErrors(): bool
+    {
+        return !empty($this->errors);
+    }
+
+    public function firstMessage(): ?Message
+    {
+        return $this->messages[0] ?? null;
+    }
 }
