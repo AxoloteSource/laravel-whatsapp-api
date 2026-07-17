@@ -18,6 +18,9 @@ Paquete de Laravel para enviar mensajes de WhatsApp de forma sencilla utilizando
   - [Listas interactivas](#listas-interactivas)
   - [Enviar imágenes](#enviar-imágenes)
   - [Enviar video por URL](#enviar-video-por-url)
+  - [Enviar documentos](#enviar-documentos)
+  - [Enviar audio](#enviar-audio)
+  - [Enviar stickers](#enviar-stickers)
   - [Subir medios](#subir-medios)
   - [Mensajes en crudo (raw)](#mensajes-en-crudo-raw)
   - [Consultar plantillas registradas en Meta](#consultar-plantillas-registradas-en-meta)
@@ -70,17 +73,17 @@ REPLICATE_WHATSAPP_HOOK_URLS=[]
 | Mensajes en crudo (raw) | ✅ |
 | Subir imágenes | ✅ |
 | Subir videos | ✅ |
+| Subir documentos | ✅ |
+| Subir audio | ✅ |
+| Subir stickers | ✅ |
+| Envío de documentos | ✅ |
+| Mensajes de audio | ✅ |
+| Mensajes de sticker | ✅ |
 | Obtener metadata de medios | ✅ |
 | Consultar plantillas registradas (WhatsAppTemplate) | ✅ |
 | Paginación de plantillas | ✅ |
 | Información del número de teléfono (quality rating, messaging limit) | ✅ |
 | Modo de prueba / fake | ✅ |
-| Envío de documentos | ❌ (TODO) |
-| Subir documentos | ❌ (TODO) |
-| Subir audio | ❌ (TODO) |
-| Subir stickers | ❌ (TODO) |
-| Mensajes de audio | ❌ |
-| Mensajes de sticker | ❌ |
 | Mensajes de ubicación | ❌ |
 | Mensajes de contacto | ❌ |
 | Mensajes de reacción | ❌ |
@@ -226,6 +229,68 @@ WhatsAppMessages::videoByUrl('521234567890', 'https://ejemplo.com/video.mp4')
     ->send();
 ```
 
+### Enviar documentos
+
+Por ID de recurso (requiere subir el archivo primero):
+
+```php
+$media = WhatsAppMedia::document('/ruta/local/factura.pdf')->upload();
+
+WhatsAppMessages::document('521234567890', $media)
+    ->caption('Aquí está tu factura')
+    ->filename('factura-2024.pdf')
+    ->send();
+```
+
+Por URL:
+
+```php
+WhatsAppMessages::documentByUrl('521234567890', 'https://ejemplo.com/factura.pdf', 'factura.pdf')
+    ->send();
+```
+
+Tipos de documento soportados: `pdf`, `doc`, `docx`, `xls`, `xlsx`, `ppt`, `pptx`, `txt`.
+
+### Enviar audio
+
+Por ID de recurso:
+
+```php
+$media = WhatsAppMedia::audio('/ruta/local/voz.ogg')->upload();
+
+WhatsAppMessages::audio('521234567890', $media)
+    ->send();
+```
+
+Por URL:
+
+```php
+WhatsAppMessages::audioByUrl('521234567890', 'https://ejemplo.com/voz.ogg')
+    ->send();
+```
+
+Tipos de audio soportados: `aac`, `mp4`, `mpeg`, `amr`, `ogg`.
+
+### Enviar stickers
+
+Por ID de recurso:
+
+```php
+$media = WhatsAppMedia::sticker('/ruta/local/sticker.webp')->upload();
+
+WhatsAppMessages::sticker('521234567890', $media)
+    ->send();
+```
+
+Por URL:
+
+```php
+WhatsAppMessages::stickerByUrl('521234567890', 'https://ejemplo.com/sticker.webp')
+    ->send();
+```
+
+Los stickers deben estar en formato `image/webp`.
+
 ### Subir medios
 
 ```php
@@ -236,6 +301,15 @@ $media = WhatsAppMedia::image('/ruta/imagen.jpg')->upload();
 
 // Subir video
 $media = WhatsAppMedia::video('/ruta/video.mp4')->upload();
+
+// Subir documento
+$media = WhatsAppMedia::document('/ruta/factura.pdf')->upload();
+
+// Subir audio
+$media = WhatsAppMedia::audio('/ruta/voz.ogg')->upload();
+
+// Subir sticker
+$media = WhatsAppMedia::sticker('/ruta/sticker.webp')->upload();
 
 // Obtener metadata de un medio por ID
 $media = WhatsAppMedia::retrieve('MEDIA_ID')->get();
@@ -406,6 +480,15 @@ $payload = WhatsAppMessages::text('521234567890')
 | `WhatsAppMessages::image($to, Media $media)` | Imagen por ID de recurso |
 | `WhatsAppMessages::imageByUrl($to, $url)` | Imagen por URL |
 | `WhatsAppMessages::videoByUrl($to, $url)` | Video por URL |
+| `WhatsAppMessages::document($to, Media $media)` | Documento por ID de recurso |
+| `WhatsAppMessages::documentByUrl($to, $url, $filename)` | Documento por URL |
+| `WhatsAppMessages::audio($to, Media $media)` | Audio por ID de recurso |
+| `WhatsAppMessages::audioByUrl($to, $url)` | Audio por URL |
+| `WhatsAppMessages::sticker($to, Media $media)` | Sticker por ID de recurso |
+| `WhatsAppMessages::stickerByUrl($to, $url)` | Sticker por URL |
+| `WhatsAppMedia::document($path)` | Subir un documento |
+| `WhatsAppMedia::audio($path)` | Subir audio |
+| `WhatsAppMedia::sticker($path)` | Subir sticker |
 | `WhatsAppMessages::raw($request, $to, $params)` | Payload en crudo con reemplazo de variables |
 | `WhatsAppMessages::test($to)` | Envía plantilla "hello_world" de prueba |
 | `WhatsAppMessages::fake()` | Activa respuestas simuladas en pruebas |

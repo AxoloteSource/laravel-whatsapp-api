@@ -18,6 +18,9 @@ Laravel package to easily send WhatsApp messages using the WhatsApp Cloud API (G
   - [Interactive lists](#interactive-lists)
   - [Sending images](#sending-images)
   - [Sending video by URL](#sending-video-by-url)
+  - [Sending documents](#sending-documents)
+  - [Sending audio](#sending-audio)
+  - [Sending stickers](#sending-stickers)
   - [Uploading media](#uploading-media)
   - [Raw messages](#raw-messages)
   - [Querying registered templates on Meta](#querying-registered-templates-on-meta)
@@ -70,17 +73,17 @@ REPLICATE_WHATSAPP_HOOK_URLS=[]
 | Raw messages | ✅ |
 | Image upload | ✅ |
 | Video upload | ✅ |
+| Document upload | ✅ |
+| Audio upload | ✅ |
+| Sticker upload | ✅ |
+| Document sending | ✅ |
+| Audio messages | ✅ |
+| Sticker messages | ✅ |
 | Retrieve media metadata | ✅ |
 | Query registered templates (WhatsAppTemplate) | ✅ |
 | Template pagination | ✅ |
 | Phone number info (quality rating, messaging limit) | ✅ |
 | Test / fake mode | ✅ |
-| Document sending | ❌ (TODO) |
-| Document upload | ❌ (TODO) |
-| Audio upload | ❌ (TODO) |
-| Sticker upload | ❌ (TODO) |
-| Audio messages | ❌ |
-| Sticker messages | ❌ |
 | Location messages | ❌ |
 | Contact messages | ❌ |
 | Reaction messages | ❌ |
@@ -226,6 +229,68 @@ WhatsAppMessages::videoByUrl('521234567890', 'https://example.com/video.mp4')
     ->send();
 ```
 
+### Sending documents
+
+By media ID (requires uploading the file first):
+
+```php
+$media = WhatsAppMedia::document('/local/path/invoice.pdf')->upload();
+
+WhatsAppMessages::document('521234567890', $media)
+    ->caption('Here is your invoice')
+    ->filename('invoice-2024.pdf')
+    ->send();
+```
+
+By URL:
+
+```php
+WhatsAppMessages::documentByUrl('521234567890', 'https://example.com/invoice.pdf', 'invoice.pdf')
+    ->send();
+```
+
+Supported document types: `pdf`, `doc`, `docx`, `xls`, `xlsx`, `ppt`, `pptx`, `txt`.
+
+### Sending audio
+
+By media ID:
+
+```php
+$media = WhatsAppMedia::audio('/local/path/voice.ogg')->upload();
+
+WhatsAppMessages::audio('521234567890', $media)
+    ->send();
+```
+
+By URL:
+
+```php
+WhatsAppMessages::audioByUrl('521234567890', 'https://example.com/voice.ogg')
+    ->send();
+```
+
+Supported audio types: `aac`, `mp4`, `mpeg`, `amr`, `ogg`.
+
+### Sending stickers
+
+By media ID:
+
+```php
+$media = WhatsAppMedia::sticker('/local/path/sticker.webp')->upload();
+
+WhatsAppMessages::sticker('521234567890', $media)
+    ->send();
+```
+
+By URL:
+
+```php
+WhatsAppMessages::stickerByUrl('521234567890', 'https://example.com/sticker.webp')
+    ->send();
+```
+
+Stickers must be in `image/webp` format.
+
 ### Uploading media
 
 ```php
@@ -236,6 +301,15 @@ $media = WhatsAppMedia::image('/path/image.jpg')->upload();
 
 // Upload video
 $media = WhatsAppMedia::video('/path/video.mp4')->upload();
+
+// Upload document
+$media = WhatsAppMedia::document('/path/invoice.pdf')->upload();
+
+// Upload audio
+$media = WhatsAppMedia::audio('/path/voice.ogg')->upload();
+
+// Upload sticker
+$media = WhatsAppMedia::sticker('/path/sticker.webp')->upload();
 
 // Retrieve media metadata by ID
 $media = WhatsAppMedia::retrieve('MEDIA_ID')->get();
@@ -406,6 +480,15 @@ $payload = WhatsAppMessages::text('521234567890')
 | `WhatsAppMessages::image($to, Media $media)` | Image by media ID |
 | `WhatsAppMessages::imageByUrl($to, $url)` | Image by URL |
 | `WhatsAppMessages::videoByUrl($to, $url)` | Video by URL |
+| `WhatsAppMessages::document($to, Media $media)` | Document by media ID |
+| `WhatsAppMessages::documentByUrl($to, $url, $filename)` | Document by URL |
+| `WhatsAppMessages::audio($to, Media $media)` | Audio by media ID |
+| `WhatsAppMessages::audioByUrl($to, $url)` | Audio by URL |
+| `WhatsAppMessages::sticker($to, Media $media)` | Sticker by media ID |
+| `WhatsAppMessages::stickerByUrl($to, $url)` | Sticker by URL |
+| `WhatsAppMedia::document($path)` | Upload a document |
+| `WhatsAppMedia::audio($path)` | Upload audio |
+| `WhatsAppMedia::sticker($path)` | Upload sticker |
 | `WhatsAppMessages::raw($request, $to, $params)` | Raw payload with variable replacement |
 | `WhatsAppMessages::test($to)` | Send "hello_world" test template |
 | `WhatsAppMessages::fake()` | Enable fake responses for testing |

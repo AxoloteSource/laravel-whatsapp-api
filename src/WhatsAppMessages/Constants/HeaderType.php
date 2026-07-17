@@ -8,4 +8,6 @@ class HeaderType
     const IMAGE = 'image';
     const VIDEO = 'video';
     const DOCUMENT = 'document';
+    const AUDIO = 'audio';
+    const STICKER = 'sticker';
 }

@@ -8,7 +8,10 @@ use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Media\Media;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Media\MediaUrl;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Interactive\InteractiveButtons;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Interactive\InteractiveList;
+use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Media\AudioMessage;
+use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Media\DocumentMessage;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Media\MediaMessage;
+use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Media\StickerMessage;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Raw;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Templates\Template;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Templates\Test;
@@ -58,6 +61,36 @@ class WhatsAppMessages
     public static function videoByUrl(string $to, string $url) : MediaUrl
     {
         return new MediaUrl($to, $url, MediaType::VIDEO);
+    }
+
+    public static function document(string $to, Media $media): DocumentMessage
+    {
+        return new DocumentMessage($to, $media, HeaderType::DOCUMENT);
+    }
+
+    public static function documentByUrl(string $to, string $url, string $filename = null): MediaUrl
+    {
+        return new MediaUrl($to, $url, MediaType::DOCUMENT, $filename);
+    }
+
+    public static function audio(string $to, Media $media): AudioMessage
+    {
+        return new AudioMessage($to, $media, HeaderType::AUDIO);
+    }
+
+    public static function audioByUrl(string $to, string $url) : MediaUrl
+    {
+        return new MediaUrl($to, $url, MediaType::AUDIO);
+    }
+
+    public static function sticker(string $to, Media $media): StickerMessage
+    {
+        return new StickerMessage($to, $media, HeaderType::STICKER);
+    }
+
+    public static function stickerByUrl(string $to, string $url) : MediaUrl
+    {
+        return new MediaUrl($to, $url, MediaType::STICKER);
     }
 
     public static function test(string $to)
