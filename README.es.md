@@ -21,6 +21,7 @@ Paquete de Laravel para enviar mensajes de WhatsApp de forma sencilla utilizando
   - [Subir medios](#subir-medios)
   - [Mensajes en crudo (raw)](#mensajes-en-crudo-raw)
   - [Consultar plantillas registradas en Meta](#consultar-plantillas-registradas-en-meta)
+  - [Consultar información del número de teléfono](#consultar-información-del-número-de-teléfono)
   - [Modo de prueba](#modo-de-prueba)
   - [Método toArray](#método-toarray)
 - [Referencia de API](#referencia-de-api)
@@ -72,6 +73,7 @@ REPLICATE_WHATSAPP_HOOK_URLS=[]
 | Obtener metadata de medios | ✅ |
 | Consultar plantillas registradas (WhatsAppTemplate) | ✅ |
 | Paginación de plantillas | ✅ |
+| Información del número de teléfono (quality rating, messaging limit) | ✅ |
 | Modo de prueba / fake | ✅ |
 | Envío de documentos | ❌ (TODO) |
 | Subir documentos | ❌ (TODO) |
@@ -334,6 +336,45 @@ WhatsAppMessages::fake();
 WhatsAppTemplate::all(); // retorna datos simulados
 ```
 
+### Consultar información del número de teléfono
+
+`WhatsAppPhoneNumber` permite obtener información de tu número de teléfono de WhatsApp Business, incluyendo quality rating y messaging limit tier.
+
+```php
+use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\WhatsAppPhoneNumber;
+```
+
+#### Obtener información del número de teléfono
+
+```php
+$info = WhatsAppPhoneNumber::info()->get();
+
+echo $info->id;                // ID del número de teléfono
+echo $info->verifiedName;      // Nombre verificado del negocio
+echo $info->qualityRating;     // Quality rating (GREEN, YELLOW, RED)
+echo $info->qualityScore;      // Quality score (0-100)
+echo $info->messagingLimitTier; // Messaging limit tier (TIER_1000, TIER_10000, etc.)
+```
+
+#### PhoneNumberDTO
+
+La información del número de teléfono se devuelve como un `PhoneNumberDTO` con las siguientes propiedades:
+
+| Propiedad | Tipo | Descripción |
+|---|---|---|
+| `id` | `string` | ID del número de teléfono |
+| `verifiedName` | `string` | Nombre verificado del negocio |
+| `qualityRating` | `string` | Quality rating (`GREEN`, `YELLOW`, `RED`) |
+| `qualityScore` | `int` | Quality score (0-100) |
+| `messagingLimitTier` | `string` | Messaging limit tier |
+
+#### Modo simulado (fake)
+
+```php
+WhatsAppMessages::fake();
+$info = WhatsAppPhoneNumber::info()->get(); // retorna datos simulados
+```
+
 ### Modo de prueba
 
 ```php
@@ -375,6 +416,7 @@ $payload = WhatsAppMessages::text('521234567890')
 | `WhatsAppTemplate::whereIn($field, $values)` | Filtrar por múltiples valores |
 | `WhatsAppTemplate::select($fields)` | Seleccionar campos específicos |
 | `WhatsAppTemplate::limit($n)` | Limitar número de resultados |
+| `WhatsAppPhoneNumber::info()` | Obtener instancia de información del número de teléfono |
 
 ## Licencia
 
