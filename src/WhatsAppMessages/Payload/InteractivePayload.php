@@ -16,13 +16,9 @@ class InteractivePayload extends Payload
 
     public function __construct(array $payload, int $messageIndex)
     {
-        logger_env('---------- COSTRUCTOR InteractivePayload -----------', 'whatsapp');
-        logger_env($payload);
-
         $interactive = $payload['messages'][$messageIndex]['interactive'];
         parent::__construct($payload, $messageIndex);
 
-        //TODO VALIDAR SI SE DEBE DE TOMAR EL MENSAJE 0
         $this->type = $interactive['type'];
 
         $this->id = $interactive[$this->type]['id'];

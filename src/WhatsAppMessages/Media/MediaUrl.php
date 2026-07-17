@@ -9,10 +9,10 @@ class MediaUrl extends WhatsAppBase
 {
     private Media $media;
 
-    public function __construct(string $to, string $url, string $type)
+    public function __construct(string $to, string $url, string $type, string $filename = null)
     {
         parent::__construct($to, $type);
-        $this->media = new Media($type, $url);
+        $this->media = new Media($type, $url, $filename);
     }
 
     /**

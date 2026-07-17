@@ -17,6 +17,11 @@ class LaravelWhatsappApiServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__.'/../config/laravel-whatsapp-api.php' => config_path('laravel-whatsapp-api.php'),
         ], 'config');
+
+        if (!config('laravel-whatsapp-api.disable_routes', true)) {
+            $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
+        }
+
         AboutCommand::add('Laravel Whatsapp Api', fn () => ['Version' => '1.0']);
     }
 }

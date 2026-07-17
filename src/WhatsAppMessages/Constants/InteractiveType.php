@@ -12,4 +12,6 @@ class InteractiveType
     const PRODUCT = 'product';
     const PRODUCT_LIST = 'product_list';
     const LIST = 'list';
+    const CATALOG_MESSAGE = 'catalog_message';
+    const FLOW = 'flow';
 }

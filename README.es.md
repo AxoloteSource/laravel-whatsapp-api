@@ -18,10 +18,21 @@ Paquete de Laravel para enviar mensajes de WhatsApp de forma sencilla utilizando
   - [Listas interactivas](#listas-interactivas)
   - [Enviar imágenes](#enviar-imágenes)
   - [Enviar video por URL](#enviar-video-por-url)
+  - [Enviar documentos](#enviar-documentos)
+  - [Enviar audio](#enviar-audio)
+  - [Enviar stickers](#enviar-stickers)
+  - [Enviar ubicación](#enviar-ubicación)
+  - [Enviar contactos](#enviar-contactos)
+  - [Enviar reacciones](#enviar-reacciones)
+  - [Enviar catálogos](#enviar-catálogos)
+  - [Enviar listas de productos](#enviar-listas-de-productos)
+  - [Enviar mensajes Flow](#enviar-mensajes-flow)
   - [Subir medios](#subir-medios)
   - [Mensajes en crudo (raw)](#mensajes-en-crudo-raw)
   - [Consultar plantillas registradas en Meta](#consultar-plantillas-registradas-en-meta)
   - [Consultar información del número de teléfono](#consultar-información-del-número-de-teléfono)
+  - [Consultar perfil de negocio](#consultar-perfil-de-negocio)
+  - [Manejo de webhooks](#manejo-de-webhooks)
   - [Modo de prueba](#modo-de-prueba)
   - [Método toArray](#método-toarray)
 - [Referencia de API](#referencia-de-api)
@@ -53,6 +64,7 @@ DEFAULT_INITIAL_TEMPLETE=default
 WHATSAPP_RAW_TEMPLETE=
 TEMPLETE_IMAGEN_HEAD=
 DISABLE_WHATSAPP_HOOK=false
+DISABLE_WHATSAPP_ROUTES=true
 REPLICATE_WHATSAPP_HOOK_URLS=[]
 ```
 
@@ -70,24 +82,24 @@ REPLICATE_WHATSAPP_HOOK_URLS=[]
 | Mensajes en crudo (raw) | ✅ |
 | Subir imágenes | ✅ |
 | Subir videos | ✅ |
+| Subir documentos | ✅ |
+| Subir audio | ✅ |
+| Subir stickers | ✅ |
+| Envío de documentos | ✅ |
+| Mensajes de audio | ✅ |
+| Mensajes de sticker | ✅ |
 | Obtener metadata de medios | ✅ |
 | Consultar plantillas registradas (WhatsAppTemplate) | ✅ |
 | Paginación de plantillas | ✅ |
 | Información del número de teléfono (quality rating, messaging limit) | ✅ |
 | Modo de prueba / fake | ✅ |
-| Envío de documentos | ❌ (TODO) |
-| Subir documentos | ❌ (TODO) |
-| Subir audio | ❌ (TODO) |
-| Subir stickers | ❌ (TODO) |
-| Mensajes de audio | ❌ |
-| Mensajes de sticker | ❌ |
-| Mensajes de ubicación | ❌ |
-| Mensajes de contacto | ❌ |
-| Mensajes de reacción | ❌ |
-| Catálogos / multi-producto | ❌ |
-| Mensajes Flow | ❌ |
-| Manejo de webhooks | ❌ |
-| Perfil de negocio | ❌ |
+| Mensajes de ubicación | ✅ |
+| Mensajes de contacto | ✅ |
+| Mensajes de reacción | ✅ |
+| Catálogos / multi-producto | ✅ |
+| Mensajes Flow | ✅ |
+| Manejo de webhooks | ✅ |
+| Perfil de negocio | ✅ |
 
 ## Uso
 
@@ -226,6 +238,323 @@ WhatsAppMessages::videoByUrl('521234567890', 'https://ejemplo.com/video.mp4')
     ->send();
 ```
 
+### Enviar documentos
+
+Por ID de recurso (requiere subir el archivo primero):
+
+```php
+$media = WhatsAppMedia::document('/ruta/local/factura.pdf')->upload();
+
+WhatsAppMessages::document('521234567890', $media)
+    ->caption('Aquí está tu factura')
+    ->filename('factura-2024.pdf')
+    ->send();
+```
+
+Por URL:
+
+```php
+WhatsAppMessages::documentByUrl('521234567890', 'https://ejemplo.com/factura.pdf', 'factura.pdf')
+    ->send();
+```
+
+Tipos de documento soportados: `pdf`, `doc`, `docx`, `xls`, `xlsx`, `ppt`, `pptx`, `txt`.
+
+### Enviar audio
+
+Por ID de recurso:
+
+```php
+$media = WhatsAppMedia::audio('/ruta/local/voz.ogg')->upload();
+
+WhatsAppMessages::audio('521234567890', $media)
+    ->send();
+```
+
+Por URL:
+
+```php
+WhatsAppMessages::audioByUrl('521234567890', 'https://ejemplo.com/voz.ogg')
+    ->send();
+```
+
+Tipos de audio soportados: `aac`, `mp4`, `mpeg`, `amr`, `ogg`.
+
+### Enviar stickers
+
+Por ID de recurso:
+
+```php
+$media = WhatsAppMedia::sticker('/ruta/local/sticker.webp')->upload();
+
+WhatsAppMessages::sticker('521234567890', $media)
+    ->send();
+```
+
+Por URL:
+
+```php
+WhatsAppMessages::stickerByUrl('521234567890', 'https://ejemplo.com/sticker.webp')
+    ->send();
+```
+
+Los stickers deben estar en formato `image/webp`.
+
+### Enviar ubicación
+
+```php
+WhatsAppMessages::location('521234567890')
+    ->latitude(19.4326)
+    ->longitude(-99.1332)
+    ->name('CDMX Centro')
+    ->address('Plaza de la Constitución, Centro Histórico')
+    ->send();
+```
+
+Tanto `latitude` como `longitude` son obligatorios. `name` y `address` son opcionales.
+
+### Enviar contactos
+
+Envía uno o varios contactos. Usa los value objects `ContactName`, `ContactPhone` y `Contact` para componer los datos:
+
+```php
+use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Contact\Contact;
+use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Contact\ContactName;
+use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Contact\ContactPhone;
+
+$contact = Contact::create(ContactName::create('John Doe')->firstName('John')->lastName('Doe'))
+    ->addPhone(ContactPhone::create('+521234567890')->type(ContactPhone::TYPE_CELL))
+    ->addPhone(ContactPhone::create('+522222222222')->type(ContactPhone::TYPE_WORK))
+    ->addEmail('john@example.com', 'WORK')
+    ->addUrl('https://example.com', 'WORK')
+    ->addOrg('Acme Corp', 'Engineering', 'CTO')
+    ->addAddress('123 Main St', 'Mexico City', 'CDMX', '06000', 'Mexico', 'MX', 'WORK')
+    ->birthday('1990-05-15');
+
+WhatsAppMessages::contact('521234567890')
+    ->addContact($contact)
+    ->send();
+```
+
+Puedes agregar varios contactos en un solo mensaje:
+
+```php
+WhatsAppMessages::contact('521234567890')
+    ->addContact(Contact::create(ContactName::create('John Doe')))
+    ->addContact(Contact::create(ContactName::create('Jane Smith')))
+    ->send();
+```
+
+Tipos de teléfono disponibles: `CELL`, `MAIN`, `IPHONE`, `HOME`, `WORK`.
+
+### Enviar reacciones
+
+Reacciona a un mensaje previamente enviado usando su `wamid`. El `message_id` es el id del mensaje al que quieres reaccionar:
+
+```php
+WhatsAppMessages::reaction('521234567890')
+    ->messageId('wamid.HBgNMTIzNDU2Nzg5MBUCABEYEjQxRjcwNjdFQUE')
+    ->emoji('👍')
+    ->send();
+```
+
+Para eliminar una reacción, envía el mismo `message_id` con un `emoji` vacío:
+
+```php
+WhatsAppMessages::reaction('521234567890')
+    ->messageId('wamid.HBgNMTIzNDU2Nzg5MBUCABEYEjQxRjcwNjdFQUE')
+    ->emoji('')
+    ->send();
+```
+
+### Enviar catálogos
+
+Muestra un catálogo multi-producto ya vinculado a tu cuenta de WhatsApp Business. El catálogo debe estar configurado en el Commerce Manager antes de enviarlo.
+
+```php
+WhatsAppMessages::catalog('521234567890')
+    ->setHeaderText('Nuestro catálogo')
+    ->body('Explora nuestros productos y haz tu pedido')
+    ->footer('Envío gratis sobre $50')
+    ->thumbnailProductRetailerId('prod-thumbnail-id')
+    ->send();
+```
+
+`thumbnailProductRetailerId` es opcional — cuando se setea, muestra la imagen de ese producto como preview del catálogo.
+
+### Enviar listas de productos
+
+Envía un mensaje multi-producto organizado en secciones, obtenido de un catálogo específico:
+
+```php
+use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Interactive\ProductItem;
+use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Interactive\ProductSection;
+
+$section1 = ProductSection::create('Destacados')
+    ->addProduct(ProductItem::create('laptop-pro-15'))
+    ->addProduct(ProductItem::create('laptop-air-13'));
+
+$section2 = ProductSection::create('Accesorios')
+    ->addProduct(ProductItem::create('mouse-wireless'))
+    ->addProduct(ProductItem::create('keyboard-mech'));
+
+WhatsAppMessages::productList('521234567890', 'catalog_abc123')
+    ->setHeaderText('Productos top')
+    ->body('Toca para ver detalles')
+    ->footer('Stock limitado')
+    ->addSection($section1)
+    ->addSection($section2)
+    ->send();
+```
+
+Los títulos de sección están limitados a 24 caracteres.
+
+### Enviar mensajes Flow
+
+Envía un mensaje interactivo de Flow (WhatsApp Flows). Los Flows te permiten construir pantallas para encuestas, actualización de cuentas, tickets de soporte, etc.
+
+```php
+WhatsAppMessages::flow('521234567890', 'flow_id_123')
+    ->setHeaderText('Encuesta')
+    ->body('Cuéntanos cómo lo estamos haciendo')
+    ->footer('Toma 1 minuto')
+    ->flowToken('token-unico-por-destinatario')
+    ->flowCta('Iniciar encuesta')
+    ->flowMessageVersion('3')
+    ->flowAction(FlowMessage::FLOW_ACTION_NAVIGATE)
+    ->flowActionPayload(['screen' => 'WELCOME'])
+    ->send();
+```
+
+Acciones de Flow disponibles: `FLOW_ACTION_NAVIGATE` (default), `FLOW_ACTION_DATA_EXCHANGE`.
+
+### Consultar perfil de negocio
+
+`WhatsAppBusinessProfile` permite obtener la información del perfil de tu cuenta de WhatsApp Business (about, descripción, email, sitios web, foto de perfil, vertical, dirección):
+
+```php
+use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\WhatsAppBusinessProfile;
+
+$profile = WhatsAppBusinessProfile::info()->get();
+
+echo $profile->about;              // Descripción corta
+echo $profile->description;        // Descripción larga
+echo $profile->email;              // Email de contacto
+echo $profile->profilePictureUrl;  // URL de la foto de perfil
+echo $profile->vertical;           // Vertical de la industria (RETAIL, etc.)
+echo $profile->websites[0];        // Primer sitio web
+echo $profile->address;            // Dirección del negocio
+```
+
+#### BusinessProfileDTO
+
+El perfil de negocio se devuelve como un `BusinessProfileDTO`:
+
+| Propiedad | Tipo | Descripción |
+|---|---|---|
+| `about` | `string` | Descripción corta del negocio (máx 139 caracteres) |
+| `description` | `string` | Descripción larga del negocio (máx 512 caracteres) |
+| `email` | `string` | Email de contacto del negocio |
+| `profilePictureUrl` | `string` | URL de la foto de perfil |
+| `vertical` | `string` | Vertical de la industria |
+| `websites` | `array` | Array de URLs de sitios web |
+| `address` | `string\|null` | Dirección del negocio |
+
+#### Modo simulado (fake)
+
+```php
+WhatsAppMessages::fake();
+$profile = WhatsAppBusinessProfile::info()->get();
+```
+
+### Manejo de webhooks
+
+El paquete puede auto-registrar un endpoint de webhook en `POST/GET /whatsapp/webhook` (configurable vía la clave `webhook_path`).
+
+Por **defecto las rutas NO se registran** (controlado por `disable_routes`). Esto es útil si prefieres registrar las rutas tú mismo en tu propio `routes/web.php` (por ejemplo, para aplicar middleware personalizado).
+
+El procesamiento del webhook está **habilitado por defecto** (`disable_hook = false`).
+
+#### Configuración
+
+Si quieres que el paquete auto-registre las rutas, configura `disable_routes=false` y proporciona un token de verificación:
+
+```env
+WHATSAPP_HOOK_VERIFY_TOKEN=tu-token-de-verificacion
+DISABLE_WHATSAPP_ROUTES=false
+```
+
+Si prefieres registrar las rutas tú mismo en `routes/web.php`, deja `disable_routes=true` (el default) y copia las definiciones desde `vendor/axolotesource/laravel-whatsapp-api/routes/web.php`.
+
+Para deshabilitar el procesamiento del webhook por completo (por ejemplo, para testing), configura `DISABLE_WHATSAPP_HOOK=true`.
+
+La ruta acepta:
+- **GET** — para el handshake de verificación de Meta (usa `hub_mode`, `hub_verify_token`, `hub_challenge`).
+- **POST** — para recibir eventos del webhook (text, button, interactive, statuses, errors).
+
+#### Parsear webhooks entrantes
+
+Usa el facade `WhatsAppWebhook` y `WebhookHandler` para parsear los payloads entrantes:
+
+```php
+use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\WhatsAppWebhook;
+
+public function webhook(\Illuminate\Http\Request $request)
+{
+    $payload = $request->all();
+    $handler = WhatsAppWebhook::handle($payload);
+
+    if ($handler->value()->hasStatuses()) {
+        foreach ($handler->statuses() as $status) {
+            // $status->getStatus() retorna 'sent', 'delivered', 'read' o 'failed'
+            if ($status->isDelivered()) {
+                // marca el mensaje como entregado
+            }
+        }
+
+        return;
+    }
+
+    $value = $handler->value();
+    $message = $value->firstMessage();
+
+    switch ($message->getType()) {
+        case 'text':
+            $text = $handler->text();
+            // $text->getText() -> cuerpo del mensaje
+            break;
+        case 'button':
+            $button = $handler->button();
+            // $button->getPayload() -> payload del botón
+            // $button->getText() -> texto del botón
+            break;
+        case 'interactive':
+            $interactive = $handler->interactive();
+            // $interactive->getType() -> 'button_reply' o 'list_reply'
+            // $interactive->getId() -> id de la opción seleccionada
+            // $interactive->getTitle() -> título de la opción seleccionada
+            // $interactive->getDescription() -> descripción (solo en listas)
+            break;
+    }
+}
+```
+
+#### Objeto Value
+
+`WebhookHandler::value()` retorna un objeto `Value` que envuelve el payload completo:
+
+| Propiedad | Tipo | Descripción |
+|---|---|---|
+| `messages` | `Message[]` | Mensajes entrantes |
+| `contacts` | `Contact[]` | Info de contacto por mensaje |
+| `statuses` | `array` | Eventos de status crudos |
+| `errors` | `array` | Errores del webhook (si los hay) |
+| `metadata` | `Metadata` | Metadata del número de teléfono |
+| `hasMessages()` | `bool` | True si el payload contiene mensajes |
+| `hasStatuses()` | `bool` | True si el payload contiene statuses |
+| `hasErrors()` | `bool` | True si el payload contiene errores |
+| `firstMessage()` | `?Message` | Primer mensaje o null |
+
 ### Subir medios
 
 ```php
@@ -236,6 +565,15 @@ $media = WhatsAppMedia::image('/ruta/imagen.jpg')->upload();
 
 // Subir video
 $media = WhatsAppMedia::video('/ruta/video.mp4')->upload();
+
+// Subir documento
+$media = WhatsAppMedia::document('/ruta/factura.pdf')->upload();
+
+// Subir audio
+$media = WhatsAppMedia::audio('/ruta/voz.ogg')->upload();
+
+// Subir sticker
+$media = WhatsAppMedia::sticker('/ruta/sticker.webp')->upload();
 
 // Obtener metadata de un medio por ID
 $media = WhatsAppMedia::retrieve('MEDIA_ID')->get();
@@ -406,6 +744,21 @@ $payload = WhatsAppMessages::text('521234567890')
 | `WhatsAppMessages::image($to, Media $media)` | Imagen por ID de recurso |
 | `WhatsAppMessages::imageByUrl($to, $url)` | Imagen por URL |
 | `WhatsAppMessages::videoByUrl($to, $url)` | Video por URL |
+| `WhatsAppMessages::document($to, Media $media)` | Documento por ID de recurso |
+| `WhatsAppMessages::documentByUrl($to, $url, $filename)` | Documento por URL |
+| `WhatsAppMessages::audio($to, Media $media)` | Audio por ID de recurso |
+| `WhatsAppMessages::audioByUrl($to, $url)` | Audio por URL |
+| `WhatsAppMessages::sticker($to, Media $media)` | Sticker por ID de recurso |
+| `WhatsAppMessages::stickerByUrl($to, $url)` | Sticker por URL |
+| `WhatsAppMessages::location($to)` | Enviar mensaje de ubicación |
+| `WhatsAppMessages::contact($to)` | Enviar mensaje de contacto(s) |
+| `WhatsAppMessages::reaction($to)` | Enviar reacción a un mensaje |
+| `WhatsAppMessages::catalog($to)` | Enviar mensaje de catálogo |
+| `WhatsAppMessages::productList($to, $catalogId)` | Enviar lista multi-producto |
+| `WhatsAppMessages::flow($to, $flowId)` | Enviar mensaje Flow |
+| `WhatsAppMedia::document($path)` | Subir un documento |
+| `WhatsAppMedia::audio($path)` | Subir audio |
+| `WhatsAppMedia::sticker($path)` | Subir sticker |
 | `WhatsAppMessages::raw($request, $to, $params)` | Payload en crudo con reemplazo de variables |
 | `WhatsAppMessages::test($to)` | Envía plantilla "hello_world" de prueba |
 | `WhatsAppMessages::fake()` | Activa respuestas simuladas en pruebas |
@@ -417,6 +770,9 @@ $payload = WhatsAppMessages::text('521234567890')
 | `WhatsAppTemplate::select($fields)` | Seleccionar campos específicos |
 | `WhatsAppTemplate::limit($n)` | Limitar número de resultados |
 | `WhatsAppPhoneNumber::info()` | Obtener instancia de información del número de teléfono |
+| `WhatsAppBusinessProfile::info()` | Obtener instancia del perfil de negocio |
+| `WhatsAppWebhook::handle($payload)` | Parsear un payload de webhook entrante |
+| `WhatsAppWebhook::verify($mode, $token, $challenge)` | Verificar suscripción del webhook |
 
 ## Licencia
 
