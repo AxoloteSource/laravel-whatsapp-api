@@ -74,7 +74,7 @@ class WhatsAppMessages
         return new DocumentMessage($to, $media, HeaderType::DOCUMENT);
     }
 
-    public static function documentByUrl(string $to, string $url, string $filename = null): MediaUrl
+    public static function documentByUrl(string $to, string $url, ?string $filename = null): MediaUrl
     {
         return new MediaUrl($to, $url, MediaType::DOCUMENT, $filename);
     }
@@ -134,7 +134,7 @@ class WhatsAppMessages
         return new Test($to);
     }
 
-    public static function templete(string $to, string $templateName = null): Template
+    public static function templete(string $to, ?string $templateName = null): Template
     {
         if ($templateName === null) {
             $templateName = config('laravel-whatsapp-api.default_initial_templete');
@@ -146,7 +146,7 @@ class WhatsAppMessages
     /**
      * @throws \Exception
      */
-    public static function raw(array $request, string $to = null, array $params = []): Raw
+    public static function raw(array $request, ?string $to = null, array $params = []): Raw
     {
         return new Raw($request, $to, $params);
     }
