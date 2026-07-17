@@ -21,6 +21,7 @@ Laravel package to easily send WhatsApp messages using the WhatsApp Cloud API (G
   - [Sending documents](#sending-documents)
   - [Sending audio](#sending-audio)
   - [Sending stickers](#sending-stickers)
+  - [Sending location](#sending-location)
   - [Uploading media](#uploading-media)
   - [Raw messages](#raw-messages)
   - [Querying registered templates on Meta](#querying-registered-templates-on-meta)
@@ -84,7 +85,7 @@ REPLICATE_WHATSAPP_HOOK_URLS=[]
 | Template pagination | ✅ |
 | Phone number info (quality rating, messaging limit) | ✅ |
 | Test / fake mode | ✅ |
-| Location messages | ❌ |
+| Location messages | ✅ |
 | Contact messages | ❌ |
 | Reaction messages | ❌ |
 | Catalogs / multi-product | ❌ |
@@ -291,6 +292,19 @@ WhatsAppMessages::stickerByUrl('521234567890', 'https://example.com/sticker.webp
 
 Stickers must be in `image/webp` format.
 
+### Sending location
+
+```php
+WhatsAppMessages::location('521234567890')
+    ->latitude(19.4326)
+    ->longitude(-99.1332)
+    ->name('CDMX Centro')
+    ->address('Plaza de la Constitución, Centro Histórico')
+    ->send();
+```
+
+Both `latitude` and `longitude` are required. `name` and `address` are optional.
+
 ### Uploading media
 
 ```php
@@ -486,6 +500,7 @@ $payload = WhatsAppMessages::text('521234567890')
 | `WhatsAppMessages::audioByUrl($to, $url)` | Audio by URL |
 | `WhatsAppMessages::sticker($to, Media $media)` | Sticker by media ID |
 | `WhatsAppMessages::stickerByUrl($to, $url)` | Sticker by URL |
+| `WhatsAppMessages::location($to)` | Send a location message |
 | `WhatsAppMedia::document($path)` | Upload a document |
 | `WhatsAppMedia::audio($path)` | Upload audio |
 | `WhatsAppMedia::sticker($path)` | Upload sticker |

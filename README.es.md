@@ -21,6 +21,7 @@ Paquete de Laravel para enviar mensajes de WhatsApp de forma sencilla utilizando
   - [Enviar documentos](#enviar-documentos)
   - [Enviar audio](#enviar-audio)
   - [Enviar stickers](#enviar-stickers)
+  - [Enviar ubicación](#enviar-ubicación)
   - [Subir medios](#subir-medios)
   - [Mensajes en crudo (raw)](#mensajes-en-crudo-raw)
   - [Consultar plantillas registradas en Meta](#consultar-plantillas-registradas-en-meta)
@@ -84,7 +85,7 @@ REPLICATE_WHATSAPP_HOOK_URLS=[]
 | Paginación de plantillas | ✅ |
 | Información del número de teléfono (quality rating, messaging limit) | ✅ |
 | Modo de prueba / fake | ✅ |
-| Mensajes de ubicación | ❌ |
+| Mensajes de ubicación | ✅ |
 | Mensajes de contacto | ❌ |
 | Mensajes de reacción | ❌ |
 | Catálogos / multi-producto | ❌ |
@@ -291,6 +292,19 @@ WhatsAppMessages::stickerByUrl('521234567890', 'https://ejemplo.com/sticker.webp
 
 Los stickers deben estar en formato `image/webp`.
 
+### Enviar ubicación
+
+```php
+WhatsAppMessages::location('521234567890')
+    ->latitude(19.4326)
+    ->longitude(-99.1332)
+    ->name('CDMX Centro')
+    ->address('Plaza de la Constitución, Centro Histórico')
+    ->send();
+```
+
+Tanto `latitude` como `longitude` son obligatorios. `name` y `address` son opcionales.
+
 ### Subir medios
 
 ```php
@@ -486,6 +500,7 @@ $payload = WhatsAppMessages::text('521234567890')
 | `WhatsAppMessages::audioByUrl($to, $url)` | Audio por URL |
 | `WhatsAppMessages::sticker($to, Media $media)` | Sticker por ID de recurso |
 | `WhatsAppMessages::stickerByUrl($to, $url)` | Sticker por URL |
+| `WhatsAppMessages::location($to)` | Enviar mensaje de ubicación |
 | `WhatsAppMedia::document($path)` | Subir un documento |
 | `WhatsAppMedia::audio($path)` | Subir audio |
 | `WhatsAppMedia::sticker($path)` | Subir sticker |

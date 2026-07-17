@@ -8,6 +8,7 @@ use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Media\Media;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Media\MediaUrl;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Interactive\InteractiveButtons;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Interactive\InteractiveList;
+use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Location\LocationMessage;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Media\AudioMessage;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Media\DocumentMessage;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Media\MediaMessage;
@@ -91,6 +92,11 @@ class WhatsAppMessages
     public static function stickerByUrl(string $to, string $url) : MediaUrl
     {
         return new MediaUrl($to, $url, MediaType::STICKER);
+    }
+
+    public static function location(string $to): LocationMessage
+    {
+        return new LocationMessage($to);
     }
 
     public static function test(string $to)
