@@ -21,6 +21,7 @@ Laravel package to easily send WhatsApp messages using the WhatsApp Cloud API (G
   - [Uploading media](#uploading-media)
   - [Raw messages](#raw-messages)
   - [Querying registered templates on Meta](#querying-registered-templates-on-meta)
+  - [Querying phone number info](#querying-phone-number-info)
   - [Test mode](#test-mode)
   - [toArray method](#toarray-method)
 - [API Reference](#api-reference)
@@ -72,6 +73,7 @@ REPLICATE_WHATSAPP_HOOK_URLS=[]
 | Retrieve media metadata | ✅ |
 | Query registered templates (WhatsAppTemplate) | ✅ |
 | Template pagination | ✅ |
+| Phone number info (quality rating, messaging limit) | ✅ |
 | Test / fake mode | ✅ |
 | Document sending | ❌ (TODO) |
 | Document upload | ❌ (TODO) |
@@ -334,6 +336,45 @@ WhatsAppMessages::fake();
 WhatsAppTemplate::all(); // returns simulated data
 ```
 
+### Querying phone number info
+
+`WhatsAppPhoneNumber` allows you to retrieve information about your WhatsApp Business phone number, including quality rating and messaging limit tier.
+
+```php
+use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\WhatsAppPhoneNumber;
+```
+
+#### Get phone number info
+
+```php
+$info = WhatsAppPhoneNumber::info()->get();
+
+echo $info->id;                // Phone number ID
+echo $info->verifiedName;      // Verified business name
+echo $info->qualityRating;     // Quality rating (GREEN, YELLOW, RED)
+echo $info->qualityScore;      // Quality score (0-100)
+echo $info->messagingLimitTier; // Messaging limit tier (TIER_1000, TIER_10000, etc.)
+```
+
+#### PhoneNumberDTO
+
+The phone number info is returned as a `PhoneNumberDTO` with the following properties:
+
+| Property | Type | Description |
+|---|---|---|
+| `id` | `string` | Phone number ID |
+| `verifiedName` | `string` | Verified business name |
+| `qualityRating` | `string` | Quality rating (`GREEN`, `YELLOW`, `RED`) |
+| `qualityScore` | `int` | Quality score (0-100) |
+| `messagingLimitTier` | `string` | Messaging limit tier |
+
+#### Fake mode
+
+```php
+WhatsAppMessages::fake();
+$info = WhatsAppPhoneNumber::info()->get(); // returns simulated data
+```
+
 ### Test mode
 
 ```php
@@ -375,6 +416,7 @@ $payload = WhatsAppMessages::text('521234567890')
 | `WhatsAppTemplate::whereIn($field, $values)` | Filter by multiple values |
 | `WhatsAppTemplate::select($fields)` | Select specific fields |
 | `WhatsAppTemplate::limit($n)` | Limit number of results |
+| `WhatsAppPhoneNumber::info()` | Get phone number info instance |
 
 ## License
 
