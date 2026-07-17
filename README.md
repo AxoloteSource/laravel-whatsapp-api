@@ -23,6 +23,7 @@ Laravel package to easily send WhatsApp messages using the WhatsApp Cloud API (G
   - [Sending stickers](#sending-stickers)
   - [Sending location](#sending-location)
   - [Sending contacts](#sending-contacts)
+  - [Sending reactions](#sending-reactions)
   - [Uploading media](#uploading-media)
   - [Raw messages](#raw-messages)
   - [Querying registered templates on Meta](#querying-registered-templates-on-meta)
@@ -88,7 +89,7 @@ REPLICATE_WHATSAPP_HOOK_URLS=[]
 | Test / fake mode | ✅ |
 | Location messages | ✅ |
 | Contact messages | ✅ |
-| Reaction messages | ❌ |
+| Reaction messages | ✅ |
 | Catalogs / multi-product | ❌ |
 | Flow messages | ❌ |
 | Webhook handling | ❌ |
@@ -340,6 +341,26 @@ WhatsAppMessages::contact('521234567890')
 
 Available phone types: `CELL`, `MAIN`, `IPHONE`, `HOME`, `WORK`.
 
+### Sending reactions
+
+React to a previously sent message using its `wamid`. The `message_id` is the id of the message you want to react to:
+
+```php
+WhatsAppMessages::reaction('521234567890')
+    ->messageId('wamid.HBgNMTIzNDU2Nzg5MBUCABEYEjQxRjcwNjdFQUE')
+    ->emoji('👍')
+    ->send();
+```
+
+To remove a reaction, send the same `message_id` with an empty `emoji`:
+
+```php
+WhatsAppMessages::reaction('521234567890')
+    ->messageId('wamid.HBgNMTIzNDU2Nzg5MBUCABEYEjQxRjcwNjdFQUE')
+    ->emoji('')
+    ->send();
+```
+
 ### Uploading media
 
 ```php
@@ -537,6 +558,7 @@ $payload = WhatsAppMessages::text('521234567890')
 | `WhatsAppMessages::stickerByUrl($to, $url)` | Sticker by URL |
 | `WhatsAppMessages::location($to)` | Send a location message |
 | `WhatsAppMessages::contact($to)` | Send contact(s) message |
+| `WhatsAppMessages::reaction($to)` | Send a reaction to a message |
 | `WhatsAppMedia::document($path)` | Upload a document |
 | `WhatsAppMedia::audio($path)` | Upload audio |
 | `WhatsAppMedia::sticker($path)` | Upload sticker |

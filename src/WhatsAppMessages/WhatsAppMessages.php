@@ -15,6 +15,7 @@ use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Media\DocumentMes
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Media\MediaMessage;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Media\StickerMessage;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Raw;
+use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Reaction\ReactionMessage;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Templates\Template;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Templates\Test;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Text\Text;
@@ -103,6 +104,11 @@ class WhatsAppMessages
     public static function contact(string $to): ContactMessage
     {
         return new ContactMessage($to);
+    }
+
+    public static function reaction(string $to): ReactionMessage
+    {
+        return new ReactionMessage($to);
     }
 
     public static function test(string $to)

@@ -12,4 +12,5 @@ class MessageType
     public const LOCATION = 'location';
     public const CONTACTS = 'contacts';
     public const TEMPLATE = 'template';
+    public const REACTION = 'reaction';
 }

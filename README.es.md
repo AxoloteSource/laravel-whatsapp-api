@@ -23,6 +23,7 @@ Paquete de Laravel para enviar mensajes de WhatsApp de forma sencilla utilizando
   - [Enviar stickers](#enviar-stickers)
   - [Enviar ubicación](#enviar-ubicación)
   - [Enviar contactos](#enviar-contactos)
+  - [Enviar reacciones](#enviar-reacciones)
   - [Subir medios](#subir-medios)
   - [Mensajes en crudo (raw)](#mensajes-en-crudo-raw)
   - [Consultar plantillas registradas en Meta](#consultar-plantillas-registradas-en-meta)
@@ -88,7 +89,7 @@ REPLICATE_WHATSAPP_HOOK_URLS=[]
 | Modo de prueba / fake | ✅ |
 | Mensajes de ubicación | ✅ |
 | Mensajes de contacto | ✅ |
-| Mensajes de reacción | ❌ |
+| Mensajes de reacción | ✅ |
 | Catálogos / multi-producto | ❌ |
 | Mensajes Flow | ❌ |
 | Manejo de webhooks | ❌ |
@@ -340,6 +341,26 @@ WhatsAppMessages::contact('521234567890')
 
 Tipos de teléfono disponibles: `CELL`, `MAIN`, `IPHONE`, `HOME`, `WORK`.
 
+### Enviar reacciones
+
+Reacciona a un mensaje previamente enviado usando su `wamid`. El `message_id` es el id del mensaje al que quieres reaccionar:
+
+```php
+WhatsAppMessages::reaction('521234567890')
+    ->messageId('wamid.HBgNMTIzNDU2Nzg5MBUCABEYEjQxRjcwNjdFQUE')
+    ->emoji('👍')
+    ->send();
+```
+
+Para eliminar una reacción, envía el mismo `message_id` con un `emoji` vacío:
+
+```php
+WhatsAppMessages::reaction('521234567890')
+    ->messageId('wamid.HBgNMTIzNDU2Nzg5MBUCABEYEjQxRjcwNjdFQUE')
+    ->emoji('')
+    ->send();
+```
+
 ### Subir medios
 
 ```php
@@ -537,6 +558,7 @@ $payload = WhatsAppMessages::text('521234567890')
 | `WhatsAppMessages::stickerByUrl($to, $url)` | Sticker por URL |
 | `WhatsAppMessages::location($to)` | Enviar mensaje de ubicación |
 | `WhatsAppMessages::contact($to)` | Enviar mensaje de contacto(s) |
+| `WhatsAppMessages::reaction($to)` | Enviar reacción a un mensaje |
 | `WhatsAppMedia::document($path)` | Subir un documento |
 | `WhatsAppMedia::audio($path)` | Subir audio |
 | `WhatsAppMedia::sticker($path)` | Subir sticker |
