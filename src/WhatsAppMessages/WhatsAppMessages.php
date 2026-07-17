@@ -6,6 +6,7 @@ use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Constants\HeaderType;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Constants\MediaType;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Media\Media;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Media\MediaUrl;
+use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Contact\ContactMessage;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Interactive\InteractiveButtons;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Interactive\InteractiveList;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Location\LocationMessage;
@@ -97,6 +98,11 @@ class WhatsAppMessages
     public static function location(string $to): LocationMessage
     {
         return new LocationMessage($to);
+    }
+
+    public static function contact(string $to): ContactMessage
+    {
+        return new ContactMessage($to);
     }
 
     public static function test(string $to)

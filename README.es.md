@@ -22,6 +22,7 @@ Paquete de Laravel para enviar mensajes de WhatsApp de forma sencilla utilizando
   - [Enviar audio](#enviar-audio)
   - [Enviar stickers](#enviar-stickers)
   - [Enviar ubicación](#enviar-ubicación)
+  - [Enviar contactos](#enviar-contactos)
   - [Subir medios](#subir-medios)
   - [Mensajes en crudo (raw)](#mensajes-en-crudo-raw)
   - [Consultar plantillas registradas en Meta](#consultar-plantillas-registradas-en-meta)
@@ -86,7 +87,7 @@ REPLICATE_WHATSAPP_HOOK_URLS=[]
 | Información del número de teléfono (quality rating, messaging limit) | ✅ |
 | Modo de prueba / fake | ✅ |
 | Mensajes de ubicación | ✅ |
-| Mensajes de contacto | ❌ |
+| Mensajes de contacto | ✅ |
 | Mensajes de reacción | ❌ |
 | Catálogos / multi-producto | ❌ |
 | Mensajes Flow | ❌ |
@@ -305,6 +306,40 @@ WhatsAppMessages::location('521234567890')
 
 Tanto `latitude` como `longitude` son obligatorios. `name` y `address` son opcionales.
 
+### Enviar contactos
+
+Envía uno o varios contactos. Usa los value objects `ContactName`, `ContactPhone` y `Contact` para componer los datos:
+
+```php
+use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Contact\Contact;
+use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Contact\ContactName;
+use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Messages\Contact\ContactPhone;
+
+$contact = Contact::create(ContactName::create('John Doe')->firstName('John')->lastName('Doe'))
+    ->addPhone(ContactPhone::create('+521234567890')->type(ContactPhone::TYPE_CELL))
+    ->addPhone(ContactPhone::create('+522222222222')->type(ContactPhone::TYPE_WORK))
+    ->addEmail('john@example.com', 'WORK')
+    ->addUrl('https://example.com', 'WORK')
+    ->addOrg('Acme Corp', 'Engineering', 'CTO')
+    ->addAddress('123 Main St', 'Mexico City', 'CDMX', '06000', 'Mexico', 'MX', 'WORK')
+    ->birthday('1990-05-15');
+
+WhatsAppMessages::contact('521234567890')
+    ->addContact($contact)
+    ->send();
+```
+
+Puedes agregar varios contactos en un solo mensaje:
+
+```php
+WhatsAppMessages::contact('521234567890')
+    ->addContact(Contact::create(ContactName::create('John Doe')))
+    ->addContact(Contact::create(ContactName::create('Jane Smith')))
+    ->send();
+```
+
+Tipos de teléfono disponibles: `CELL`, `MAIN`, `IPHONE`, `HOME`, `WORK`.
+
 ### Subir medios
 
 ```php
@@ -501,6 +536,7 @@ $payload = WhatsAppMessages::text('521234567890')
 | `WhatsAppMessages::sticker($to, Media $media)` | Sticker por ID de recurso |
 | `WhatsAppMessages::stickerByUrl($to, $url)` | Sticker por URL |
 | `WhatsAppMessages::location($to)` | Enviar mensaje de ubicación |
+| `WhatsAppMessages::contact($to)` | Enviar mensaje de contacto(s) |
 | `WhatsAppMedia::document($path)` | Subir un documento |
 | `WhatsAppMedia::audio($path)` | Subir audio |
 | `WhatsAppMedia::sticker($path)` | Subir sticker |
