@@ -8,6 +8,10 @@ class PhoneNumberDTO
     public string $verifiedName;
     public string $qualityRating;
     public string $qualityScore;
+    public string $codeVerificationStatus;
+    public string $displayPhoneNumber;
+    public string $platformType;
+    public array $throughput;
 
     public function __construct(array $data)
     {
@@ -15,5 +19,9 @@ class PhoneNumberDTO
         $this->verifiedName = $data['verified_name'] ?? '';
         $this->qualityRating = $data['quality_rating'] ?? '';
         $this->qualityScore = $data['quality_score']['score'] ?? '';
+        $this->codeVerificationStatus = $data['code_verification_status'] ?? '';
+        $this->displayPhoneNumber = $data['display_phone_number'] ?? '';
+        $this->platformType = $data['platform_type'] ?? '';
+        $this->throughput = $data['throughput'] ?? [];
     }
 }
