@@ -3,18 +3,35 @@
 namespace Axolotesource\LaravelWhatsappApi\WhatsAppMessages\PhoneNumber;
 
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Config;
+use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\Enums\PhoneNumberFieldEnum;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\PhoneNumber\DTO\PhoneNumberDTO;
 use Axolotesource\LaravelWhatsappApi\WhatsAppMessages\WhatsAppMessages;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
+use InvalidArgumentException;
 
 class PhoneNumberInfo
 {
     use Config;
 
+    protected array $fields = [];
+
     public function __construct()
     {
         $this->initialize();
+    }
+
+    public function select(array $fields): self
+    {
+        $validFields = PhoneNumberFieldEnum::all();
+        foreach ($fields as $field) {
+            if (!in_array($field, $validFields)) {
+                throw new InvalidArgumentException("Invalid field: $field");
+            }
+        }
+
+        $this->fields = $fields;
+        return $this;
     }
 
     /**
@@ -30,11 +47,13 @@ class PhoneNumberInfo
         }
 
         $url = "$this->baseUrl$this->phoneNumberID";
-        $queryParams = [
-            'fields' => 'quality_rating,messaging_limit_tier,verified_name,quality_score',
-        ];
 
-        $url = $this->addQueryParams($url, $queryParams);
+        if (!empty($this->fields)) {
+            $queryParams = [
+                'fields' => implode(',', $this->fields),
+            ];
+            $url = $this->addQueryParams($url, $queryParams);
+        }
 
         $response = Http::withHeaders([
             'Authorization' => "Bearer $this->bearer",
@@ -72,8 +91,15 @@ class PhoneNumberInfo
                 'id' => '123456789',
                 'verified_name' => 'Mi Empresa',
                 'quality_rating' => 'GREEN',
-                'quality_score' => 0,
-                'messaging_limit_tier' => 'TIER_1000',
+                'quality_score' => [
+                    'score' => 'GREEN',
+                ],
+                'code_verification_status' => 'EXPIRED',
+                'display_phone_number' => '+52 1 33 3781 5545',
+                'platform_type' => 'CLOUD_API',
+                'throughput' => [
+                    'level' => 'STANDARD',
+                ],
             ]),
         ]);
     }
